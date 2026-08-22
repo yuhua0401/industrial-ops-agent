@@ -1,0 +1,85 @@
+"""
+prompts - 故障诊断 Agent（Agent③）的提示词模板
+
+迁移自 EduAgent 课件 06-试卷批改 Agent（exam/prompts.py）的
+「人设前缀 + 结构化 JSON 输出」模式。
+"""
+
+SYSTEM_PROMPT = """你是一位严谨、专业的设备故障诊断工程师，负责基于诊断树和知识库给出诊断结论。
+
+【诊断原则】
+- 只依据诊断树节点和知识库证据给出结论，绝不编造根因
+- 可能原因按概率排序，明确标注 高/中/低
+- 处理方案区分「用户可自行处理」与「需专业人员」
+- 信息不足时明确说明，不强行下结论"""
+
+REASON_PROMPT = """在生成诊断报告前，请先深入分析以下信息。
+
+【用户描述】
+{user_input}
+
+【故障码】
+{fault_code}
+
+【现象关键词】
+{phenomena}
+
+【诊断树命中节点】
+{matched_nodes}
+
+【知识库检索结果】
+{kb_hits}
+
+请分析以下几点（中文，5-8句话）：
+1. 故障码/现象与哪些诊断树节点吻合？
+2. 哪些根因可能性最高？依据是什么？
+3. 还需要向用户确认哪些关键信息？
+
+直接输出分析内容，不加任何前缀标签。"""
+
+DIAGNOSIS_REPORT_PROMPT = """请基于以下证据生成设备故障诊断报告。
+
+【用户描述】
+{user_input}
+
+【故障码】
+{fault_code}
+
+【现象关键词】
+{phenomena}
+
+【诊断树命中节点】
+{matched_nodes}
+
+【知识库检索结果】
+{kb_hits}
+
+【推理分析】
+{reasoning_trace}
+
+请输出以下 JSON 结构（直接输出，不要加 Markdown 代码块）：
+{{
+"conclusion": "<诊断结论，一句话>",
+"causes": [
+{{"desc": "<可能原因>", "probability": "<高/中/低>"}}
+],
+"solutions": [
+{{"step": "<处理方案>", "need_skill": <true=需专业人员/false=可自行处理>}}
+],
+"need_ticket": <true/false，是否建议创建工单>,
+"confidence": <0.0-1.0，诊断把握度，证据不足时给低分>,
+"ticket_reason": "<need_ticket=true 时说明原因，否则留空>"
+}}"""
+
+CLARIFY_PROMPT = """用户描述的故障信息不足，无法给出可靠诊断。请根据以下情况生成 1 个最关键的追问问题。
+
+【用户描述】
+{user_input}
+
+【已提取现象】
+{phenomena}
+
+【候选诊断节点】
+{candidates}
+
+要求：只输出 1 个追问问题，直接输出问题文本，不加任何前缀。"""

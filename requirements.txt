@@ -1,0 +1,57 @@
+setuptools==77.0.3
+marshmallow<4
+
+# ===== LangChain / LangGraph 核心（版本严格锁定，不要改）=====
+langchain==1.2.10
+langchain-core==1.2.16
+langchain-community==0.4.1                  # PyPDFLoader / TextLoader 文档加载（配 langchain-core 1.2.x）
+langchain-text-splitters==1.1.1        # 知识库文档切分
+langgraph==1.0.9
+langgraph-prebuilt==1.0.8
+langgraph-checkpoint-postgres==2.0.8   # 生产阶段切 PostgresSaver 用，预装备用
+
+# ===== 模型集成 =====
+langchain-openai==1.1.10               # DeepSeek 兼容 OpenAI 接口，通过此包接入
+
+# ===== 本地模型（进程内调用，无需独立服务）=====
+transformers==4.51.0                   # MiniLM-L6-v2 意图分类
+sentence-transformers==3.3.1           # BGE-Reranker 精排
+sentencepiece==0.2.1                   # BGE-Reranker tokenizer 依赖
+torch==2.5.1                           # 上述模型的底层依赖
+FlagEmbedding>=1.2.0                   # BGE-M3 本地嵌入（dense + sparse）
+
+# ===== Web 框架 =====
+fastapi==0.117.1
+uvicorn[standard]==0.32.1
+python-multipart==0.0.20               # 文件上传（Word / PDF）
+sse-starlette==2.1.3                   # SSE 流式响应（问答 / 面试）
+
+# ===== 数据库 =====
+asyncpg==0.30.0                        # PostgreSQL 异步驱动
+sqlalchemy[asyncio]==2.0.36            # 异步 SQL 工具
+pymilvus==2.4.9                        # Milvus 向量库客户端
+numpy==1.26.4
+
+# ===== 文档解析 =====
+python-docx==1.1.2                     # Word 文档解析（试卷批改）
+pymupdf==1.24.14                       # PDF 解析（import 名为 fitz）
+openpyxl==3.1.5                        # Excel 表格解析（知识库 .xlsx 加载）
+
+# ===== 数据校验 / 配置 =====
+pydantic==2.11.4
+pydantic-settings==2.11.0              # 读取 .env.local
+
+# ===== 工具库 =====
+httpx==0.28.1                          # 异步 HTTP 客户端
+python-jose[cryptography]==3.3.0       # JWT 令牌
+passlib[bcrypt]==1.7.4                 # 密码 bcrypt 哈希
+bcrypt==4.0.1                          # passlib 1.7.4 不兼容 bcrypt>=5，锁定 4.x
+python-dotenv==1.0.1                   # 加载 .env.local
+
+# ===== MCP 协议 =====
+mcp==1.26.0                            # 官方 MCP Python SDK（含 FastMCP）
+duckduckgo-search==8.1.1               # 免费 Web 搜索，无需 API key
+
+# ===== 测试 =====
+pytest==8.3.4
+pytest-asyncio==0.24.0

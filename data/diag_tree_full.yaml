@@ -1,0 +1,4125 @@
+- node_id: D001
+  fault_code: E001
+  name: 电机过载保护触发
+  priority: 2
+  phenomena:
+  - 电机不转
+  - 过载报警
+  - 电机发热
+  - 异响
+  causes:
+  - desc: 负载过大或卡死
+    probability: 高
+  - desc: 供电电压过低
+    probability: 中
+  - desc: 轴承磨损卡滞
+    probability: 中
+  - desc: 变频器参数配置错误
+    probability: 低
+  solutions:
+  - step: 断电后手动盘车，确认是否卡死
+    need_skill: false
+  - step: 空载启动测试，观察是否恢复
+    need_skill: false
+  - step: 万用表检测三相供电电压
+    need_skill: true
+  - step: 检查变频器过载保护参数
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 故障时设备是否处于满载状态？
+  - 电机外壳是否明显发烫？
+- node_id: D002
+  fault_code: E002
+  name: 变频器过流报警
+  priority: 2
+  phenomena:
+  - 变频器报警
+  - OC报警
+  - 启动即跳闸
+  causes:
+  - desc: 输出侧短路或接地
+    probability: 高
+  - desc: 加速时间过短
+    probability: 中
+  - desc: 电机绕组绝缘损坏
+    probability: 中
+  solutions:
+  - step: 检查输出侧电缆绝缘与接线
+    need_skill: true
+  - step: 延长加速时间参数
+    need_skill: true
+  - step: 摇表检测电机绕组绝缘电阻
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 报警发生在启动瞬间还是运行过程中？
+- node_id: D003
+  fault_code: E003
+  name: 通讯丢失报警
+  priority: 1
+  phenomena:
+  - 通讯中断
+  - COM丢失
+  - 上位机连不上
+  causes:
+  - desc: 通讯线松动或断线
+    probability: 高
+  - desc: 波特率/地址参数不匹配
+    probability: 中
+  - desc: 通讯模块损坏
+    probability: 低
+  solutions:
+  - step: 重新插拔通讯线并紧固
+    need_skill: false
+  - step: 核对波特率、站地址参数
+    need_skill: true
+  - step: 更换通讯模块
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 其他站点的通讯是否正常？
+- node_id: D004
+  fault_code: E004
+  name: 电动刀架定位齿盘进铁屑
+  priority: 2
+  phenomena:
+  - 加工尺寸不能控制
+  - 加工尺寸变化不定
+  - 刀架定位不准
+  causes:
+  - desc: 定位齿盘内进入细小铁屑，随刀架转动移位
+    probability: 高
+  - desc: 齿盘长期未清洁，积屑影响定位精度
+    probability: 中
+  solutions:
+  - step: 拆开电动刀架，用压缩空气吹净定位齿盘上的铁屑
+    need_skill: false
+  - step: 重新装配电动刀架并试运行验证
+    need_skill: false
+  - step: 建立定期清洁制度，定期拆开清扫定位齿盘
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 加工尺寸误差是否时大时小、无固定规律？
+- node_id: D005
+  fault_code: E005
+  name: 电动刀架霍尔元件损坏
+  priority: 2
+  phenomena:
+  - 加工过程中刀具损坏
+  - 刀架选刀错位
+  - 刀号识别不准
+  causes:
+  - desc: 霍尔元件损坏（关键定位检测元件）
+    probability: 高
+  - desc: 发讯盘触点接触不良
+    probability: 中
+  solutions:
+  - step: 检查电动刀架霍尔元件，损坏则更换
+    need_skill: true
+  - step: 检查发讯盘触点与线路连接
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 故障是否发生在自动换刀后？
+- node_id: D006
+  fault_code: E006
+  name: 机床开关电源故障
+  priority: 3
+  phenomena:
+  - 机床无显示
+  - 两坐标有命令无动作
+  - 系统启动即掉电
+  causes:
+  - desc: 开关电源输出异常（两驱动单元公共部分）
+    probability: 高
+  - desc: 电解电容器老化失效
+    probability: 中
+  solutions:
+  - step: 用三用表测量开关电源各路输出
+    need_skill: true
+  - step: 更换损坏的开关电源
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 机床是否有任何报警显示？
+- node_id: D007
+  fault_code: E007
+  name: 回零位置误差（无规律）
+  priority: 2
+  phenomena:
+  - 回零不准
+  - 参考点位置误差
+  - 轴回零无规律偏差
+  causes:
+  - desc: 伺服单元内集成电路损坏（计数单元收不到编码器反馈）
+    probability: 高
+  - desc: 位置编码器故障
+    probability: 中
+  solutions:
+  - step: 检查伺服单元、计数单元，更换损坏的集成电路
+    need_skill: true
+  - step: 检查位置编码器反馈信号
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 回零误差是否有固定值？
+- node_id: D008
+  fault_code: E008
+  name: 伺服与电机信号线断线
+  priority: 2
+  phenomena:
+  - 主轴不起动且无报警
+  - 伺服不执行动作
+  - 时转时不转
+  causes:
+  - desc: 伺服与电动机信号控制线断线/接触不良
+    probability: 高
+  - desc: 接线端子松动
+    probability: 中
+  solutions:
+  - step: 拆开接线头检查，轻拉确认是否有线脱落
+    need_skill: true
+  - step: 焊接修复断线并做好绝缘
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 主轴是否完全不起动，还是间歇性转动？
+- node_id: D009
+  fault_code: E009
+  name: 数控装置显示乱字符
+  priority: 2
+  phenomena:
+  - 显示乱字符
+  - 程序不能输入
+  - 数控装置不能正常运行
+  causes:
+  - desc: 插接式集成电路/功能板接触不良（气温突变时多发）
+    probability: 高
+  - desc: 总线插接松动
+    probability: 中
+  solutions:
+  - step: 逐一按压插接式集成电路块与功能板总线插接
+    need_skill: false
+  - step: 按压坐标功放电源板与插座连接
+    need_skill: false
+  - step: 若频繁复发，检查总线插座与散热风机
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 故障是否在气温突变时出现？
+- node_id: D010
+  fault_code: E010
+  name: 继电器触点烧蚀
+  priority: 2
+  phenomena:
+  - 无故停机
+  - 主轴转速不稳
+  - 主轴换档失灵
+  - 继电器吸合有吱吱响声
+  causes:
+  - desc: 继电器触点烧黑、烧蚀，接触不良
+    probability: 高
+  - desc: 用电高峰期电压波动加剧触点损耗
+    probability: 中
+  solutions:
+  - step: 拆下继电器检查触点，酒精擦洗
+    need_skill: false
+  - step: 烧蚀严重触点用细砂纸打磨后清洗
+    need_skill: false
+  - step: 建立定期检查制度
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 故障是否多发生在用电高峰时段？
+- node_id: D011
+  fault_code: E011
+  name: 滚珠丝杠轴承损坏（轴向抖动）
+  priority: 2
+  phenomena:
+  - 工作台轴向机械抖动
+  - 进给位移抖动
+  - 轴移动振动不报警
+  causes:
+  - desc: 滚珠丝杠支承轴承损坏
+    probability: 高
+  - desc: 滚动体磨损，预加载荷不足
+    probability: 中
+  solutions:
+  - step: 检查丝杠支承轴承，同型号替换
+    need_skill: true
+  - step: 滚动弹子逐粒测量选配，重新装配调整预载
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 抖动是否只在进给移动时出现？
+- node_id: D012
+  fault_code: E012
+  name: 主轴低速抖动（齿轮噪声）
+  priority: 1
+  phenomena:
+  - 主轴低速起动抖动
+  - 高速正常
+  - 齿轮啮合噪声
+  causes:
+  - desc: 传动齿轮齿形误差、法向周节影响
+    probability: 高
+  - desc: 齿轮磨损或啮合间隙不均匀
+    probability: 中
+  solutions:
+  - step: 确认机械传动无故障后，检查主轴传动齿轮
+    need_skill: true
+  - step: 齿轮齿顶修缘，改善啮合噪声
+    need_skill: true
+  - step: 调整啮合间隙或更换损坏齿轮
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 高速运行时是否正常？
+- node_id: D013
+  fault_code: E013
+  name: 光栅尺铝屑污染（加工超差）
+  priority: 3
+  phenomena:
+  - 加工轮廓严重超差
+  - 凸轮加工误差增大
+  - 尺寸超差无报警
+  causes:
+  - desc: 光栅尺保护铝壳滑道受损，铝屑进入栅尺
+    probability: 高
+  - desc: 栅尺被铝屑污染
+    probability: 高
+  solutions:
+  - step: 用油石、金相砂纸修复保护铝壳滑道
+    need_skill: true
+  - step: 用分析纯酒精冲洗栅尺冲出铝屑，干燥后鹿皮轻擦
+    need_skill: true
+  - step: 重新校正栅尺安装精度
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 超差是否随加工时间逐渐加重？
+- node_id: D101
+  name: 报警
+  phenomena:
+  - 报警
+  - 超程
+  - 停止
+  causes:
+  - desc: ’-B的BA1触点间接触不良从而使得变换信号（!）时有时无所致
+    probability: 高
+  - desc: 故障为微型继电器’-B的BA1触点间接触不良从而
+    probability: 中
+  solutions:
+  - step: 根据流程图检查，机床的故障为微型继电器’-B的BA1触点间接触不良从而使得变换信号（!）时有时无所致
+    need_skill: true
+  - step: 更换该元件后，故障排除
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（由于编程时操作失误而发生过-’-等软超程）？
+- node_id: D102
+  name: 主轴不转
+  phenomena:
+  - 主轴不转
+  - 不转
+  - 时转时不转
+  causes:
+  - desc: ’-B的BA1触点间接触不良从而使得变换信号（!）时有时无所致
+    probability: 高
+  - desc: 故障为微型继电器’-B的BA1触点间接触不良从而
+    probability: 中
+  solutions:
+  - step: 根据流程图检查，机床的故障为微型继电器’-B的BA1触点间接触不良从而使得变换信号（!）时有时无所致
+    need_skill: true
+  - step: 更换该元件后，故障排除
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「主轴不转」的具体表现（用7方式不能将有关指令输入到计算机中去自）？
+- node_id: D103
+  name: 报警
+  phenomena:
+  - 报警
+  - 停止
+  causes:
+  - desc: 快速进给时丢脉冲所致
+    probability: 高
+  solutions:
+  - step: 经检查确定为光电脉冲编码器有问题，快速进给时丢脉冲所致
+    need_skill: true
+  - step: 购买一只同本产脉冲编码器替换，它与德国产编码器对应关系如表’
+    need_skill: true
+  - step: '"如果机床送电后'
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（机床操作面板上2故障报警指示灯亮机床停止）？
+- node_id: D104
+  name: 机床合上主开
+  phenomena:
+  - 机床合上主开
+  causes:
+  - desc: 快速进给时丢脉冲所致
+    probability: 高
+  solutions:
+  - step: 经检查确定为光电脉冲编码器有问题，快速进给时丢脉冲所致
+    need_skill: true
+  - step: 购买一只同本产脉冲编码器替换，它与德国产编码器对应关系如表’
+    need_skill: true
+  - step: '"如果机床送电后'
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「机床合上主开」的具体表现（机床合上主开关起动数控系统时在示显面板上）？
+- node_id: D105
+  name: 面板显示值与
+  phenomena:
+  - 面板显示值与
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 经检查确定为光电脉冲编码器有问题，快速进给时丢脉冲所致
+    need_skill: true
+  - step: 购买一只同本产脉冲编码器替换，它与德国产编码器对应关系如表’
+    need_skill: true
+  - step: '"如果机床送电后'
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「面板显示值与」的具体表现（面板显示值与机床实际进给值不符显示值总是）？
+- node_id: D106
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 更换’(5!后重新送电启相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换’5!后重新送电启动6柜正常
+    need_skill: true
+  - step: 对7860"9的常用操作功能809，9，2，，86进行检验，一切正常
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（在加工一产品零件时机床发出报警信号89"）？
+- node_id: D107
+  name: 在调试一零件
+  phenomena:
+  - 在调试一零件
+  causes:
+  - desc: 更换’(5!后重新送电启相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换’5!后重新送电启动6柜正常
+    need_skill: true
+  - step: 对7860"9的常用操作功能809，9，2，，86进行检验，一切正常
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「在调试一零件」的具体表现（在调试一零件程序当中将机床锁住进行空运行）？
+- node_id: D108
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 更换’(5!后重新送电启相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换’5!后重新送电启动6柜正常
+    need_skill: true
+  - step: 对7860"9的常用操作功能809，9，2，，86进行检验，一切正常
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（死机故障初期起动1柜时不是很容易一般要起）？
+- node_id: D109
+  name: 电动机失步
+  phenomena:
+  - 电动机失步
+  - 步进电动机失步
+  - 失步
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: '!选用性能好的元器件'
+    need_skill: false
+  - step: '!改用该系统改进型线路，如"’，光耦管后接与非门，工作更可靠'
+    need_skill: true
+  - step: 笔者采用方法"排除故障，机床运行良好，效果颇佳，再测各点波形均正常
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「电动机失步」的具体表现（步进电动机失步故障检查与分析该数控系统为）？
+- node_id: D110
+  name: 自动加工时右
+  phenomena:
+  - 自动加工时右
+  causes:
+  - desc: 更换一个新的整流变压器，相关部件异常
+    probability: 高
+  solutions:
+  - step: 为彻底消除故障，更换一个新的整流变压器，使机床稳定工作
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「自动加工时右」的具体表现（自动加工时右工位的数控系统经常出现自动关）？
+- node_id: D111
+  name: 机床运转正常
+  phenomena:
+  - 机床运转正常
+  causes:
+  - desc: 因轴方向撞刀后也出现过类似故障
+    probability: 高
+  solutions:
+  - step: 为此决定松开轴连轴节，转动轴电动机轴半圈（丝杠轴不动）
+    need_skill: true
+  - step: 再试返回参考点，发现有时小于AA，有时也大于AA的现象
+    need_skill: true
+  - step: 说明：这类故障有它的普遍性，后在长城机床厂生产的’!数控车床因轴方向撞刀后也出现过类似故障
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「机床运转正常」的具体表现（机床运转正常"显示参考点位置值没变（3-）？
+- node_id: D112
+  name: 系统报警
+  phenomena:
+  - 系统报警
+  - 报警
+  - 不准
+  causes:
+  - desc: 更换损坏的集成电路，故障相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换损坏的集成电路，故障排除
+    need_skill: true
+  - step: 那么就应怀疑是显示电路的问题了
+    need_skill: false
+  - step: 从脉冲宽度跟踪细分
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「系统报警」的具体表现（机床的轴回零不准产生误差误差在011左右）？
+- node_id: D113
+  name: 报警
+  phenomena:
+  - 报警
+  - 停止
+  causes:
+  - desc: 更换电路的快速熔断器，故相关部件异常
+    probability: 高
+  solutions:
+  - step: '!更换电路的快速熔断器，故障未消除'
+    need_skill: true
+  - step: '"又查主驱动单元内部控制保险熔断'
+    need_skill: false
+  - step: 更换后故障仍不能排除
+    need_skill: true
+  - step: 再查，场效应管损坏二个，用国产管替代，在电平的转换上稍作处理
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（操作者在半夜点以后开机操作运行不到’-突）？
+- node_id: D114
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 由于没有随机软件程序（机床参数和接口程序）的录音磁带
+    probability: 高
+  - desc: 对数控机床在操作上的特殊性没有引起足够重视
+    probability: 中
+  - desc: 以一般机床开合电源的习惯操作数控机床而引起故障
+    probability: 低
+  solutions:
+  - step: 故障出现后，由于没有随机软件程序（机床参数和接口程序）的录音磁带，也不知文件号及操作方法，无法自行解决
+    need_skill: true
+  - step: 通过大连机床厂销售服务处与匈牙利西欧公司联系，派专家携程序前来处理
+    need_skill: true
+  - step: 重新输入接口程序，87G报警解除
+    need_skill: false
+  - step: 交换主驱动单元上HI!
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（在调试中出现87G报警此报警无法用删除按）？
+- node_id: D115
+  name: 系统报警
+  phenomena:
+  - 系统报警
+  - 报警
+  causes:
+  - desc: 故而引起压力继电器反馈输入信号不稳定
+    probability: 高
+  - desc: 故障是在投入运行后不久发生的
+    probability: 中
+  solutions:
+  - step: 清洗润滑系统，检查调整压力继电器，报警消除，机床恢复正常运行
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「系统报警」的具体表现（系统开机后出现’报警故障检查与分析600）？
+- node_id: D116
+  name: 加工程序输入
+  phenomena:
+  - 加工程序输入
+  causes:
+  - desc: 由于它的特殊性
+    probability: 高
+  - desc: 问题在这儿成了头痛的问题
+    probability: 中
+  solutions:
+  - step: 从电源引线管的接地螺栓上再加接一根到数控柜接地点的接地线
+    need_skill: true
+  - step: （’车床床身上的接地点已经与电源引线管接地螺栓有良好的连结）作重复接地、接零后，故障排除
+    need_skill: true
+  - step: 说明：!为预防加工程序的丢失，在重复接地后，又解决了操作程序的输入问题，逐步为其主要零件程序，固化了块
+    need_skill: true
+  - step: 至此故障排除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「加工程序输入」的具体表现（加工程序输入’8后启动主轴时程序不能被执）？
+- node_id: D117
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 因其4为1位芯片
+    probability: 高
+  - desc: 希望使用经济型数控系统的操作人员和维修人员对此引起重视
+    probability: 中
+  solutions:
+  - step: 将暂时不用的程序删除后，重新输入新的加工程序，故障排除
+    need_skill: true
+  - step: 希望使用经济型数控系统的操作人员和维修人员对此引起重视
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（在输入新程序时发生号报警故障检查与分析该）？
+- node_id: D118
+  name: 调用零件加工
+  phenomena:
+  - 调用零件加工
+  causes:
+  - desc: 因是操作者对机床的操作方法不熟悉
+    probability: 高
+  - desc: 原因是操作者对机床的操作方法不熟悉
+    probability: 中
+  solutions:
+  - step: 纠正操作者的操作方法后，故障排除
+    need_skill: false
+  - step: 说明：该故障产生的主要原因是操作者对机床的操作方法不熟悉
+    need_skill: true
+  - step: 这种操作不当造成的故障在维修的过程中常常都会遇到
+    need_skill: false
+  - step: 这说明提高数控机床的操作者和维修人员的素质，已经成为当务之急
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「调用零件加工」的具体表现（调用零件加工程序时不能进行选择系统只给出）？
+- node_id: D119
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 更换一只新的(&&)(集相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换一只新的集成电路块后，故障排除
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（加工过程中出现号’报警故障检查与分析该机）？
+- node_id: D120
+  name: 刀架不能转
+  phenomena:
+  - 刀架不能转
+  - 不能移动
+  - 报警
+  - 不能转
+  causes:
+  - desc: 更换一新系统输入控制板后相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换一新系统输入控制板后，故障排除
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「刀架不能转」的具体表现（手动调整时-轴均不能移动电动刀架也不能转）？
+- node_id: D121
+  name: 用自动加工功
+  phenomena:
+  - 用自动加工功
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 打开刀架控制盒，在中间继电器!"、!"线圈两端加设续流二级管、
+    need_skill: true
+  - step: 这样，就消除了在换刀时，由!"、!"线圈所产生的反电动势
+    need_skill: true
+  - step: 使问题得到了彻底的解决
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「用自动加工功」的具体表现（用“自动加工”功能进行自动加工在执行换刀）？
+- node_id: D122
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 调整量以$-..左右为宜相关部件异常
+    probability: 高
+  solutions:
+  - step: '!按照机床机械维修手册中的介绍，拆下"坐标滑枕最下方的端盖'
+    need_skill: true
+  - step: '"用一内六角扳手插入端部外露的丝框端面的内六角孔中，旋转丝杠，可使台面上下移动'
+    need_skill: true
+  - step: 打开机床开关，并按下—’键
+    need_skill: false
+  - step: 仔细观察电柜中的显示
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（开动机床回参考点时012显示号报警故障检）？
+- node_id: D123
+  name: 电动机报警
+  phenomena:
+  - 电动机报警
+  - 报警
+  causes:
+  - desc: 更换低功耗低失调电压四比相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换低功耗低失调电压四比较器’，开机测量比较器的!脚，状态恢复正常
+    need_skill: true
+  - step: 轴步进电动机乱走故障排除
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「电动机报警」的具体表现（轴伺服板-（位置准备）绿灯不亮0（过载））？
+- node_id: D124
+  name: 步进速度高时
+  phenomena:
+  - 步进速度高时
+  causes:
+  - desc: 更换低功耗低失调电压四比相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换低功耗低失调电压四比较器’，开机测量比较器的!脚，状态恢复正常
+    need_skill: true
+  - step: 轴步进电动机乱走故障排除
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「步进速度高时」的具体表现（步进速度高时轴乱走步进速度低时轴停在某处）？
+- node_id: D125
+  name: 停止
+  phenomena:
+  - 停止
+  causes:
+  - desc: 因此不宜多试
+    probability: 高
+  solutions:
+  - step: 驱动板的型号为：ABCDE4F!7"FGHB7"·0I1·J1K7L!
+    need_skill: true
+  - step: 为了便于维修和更换，把线路板设计成插接式，其中板有两组多芯插头与底板相连
+    need_skill: true
+  - step: 实践证明，进口机床的电子元件本身损坏率极低，只要重新用连线焊接的方法，替代原插头连接式，问题便得到解决
+    need_skill: true
+  - step: 经过焊接后的线路板，再振动也不会发生失控故障，运行两年多一直正常
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「停止」的具体表现（在正常加工过程中突然出现拖板高速移动曾发）？
+- node_id: D126
+  name: 轴移动时轴步
+  phenomena:
+  - 轴移动时轴步
+  causes:
+  - desc: 因缺相产生抖动
+    probability: 高
+  solutions:
+  - step: '!首先将’轴步进电动机与负荷脱离'
+    need_skill: false
+  - step: 脱离后发现步进电动机轴头上连结齿轮定位销脱落
+    need_skill: false
+  - step: 电动机与齿轮的连结是松动的
+    need_skill: false
+  - step: '"去掉齿轮，单独运行步进电动机，发现电动机因缺相产生抖动'
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「轴移动时轴步」的具体表现（6轴移动时6轴步进电动机功放柜7相熔体迅）？
+- node_id: D127
+  name: 无显示
+  phenomena:
+  - 无显示
+  causes:
+  - desc: 更换电源后故障排除。相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换电源后故障排除
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「无显示」的具体表现（机床无显示两坐标有命令无动作故障检查与分）？
+- node_id: D128
+  name: 轴电动机声音
+  phenomena:
+  - 轴电动机声音
+  causes:
+  - desc: 更换电源后故障排除。相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换电源后故障排除
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「轴电动机声音」的具体表现（轴电动机声音异常故障检查与分析01经济型）？
+- node_id: D129
+  name: 两轴电动机走
+  phenomena:
+  - 两轴电动机走
+  causes:
+  - desc: 更换电源后故障排除。相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换电源后故障排除
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「两轴电动机走」的具体表现（两轴电动机走不动连续走正常故障检查与分析）？
+- node_id: D130
+  name: 机床刚通电而
+  phenomena:
+  - 机床刚通电而
+  causes:
+  - desc: 由表!"可知当"!时造成的向偏差是很小的
+    probability: 高
+  solutions:
+  - step: 为保证工件加工精度应消除每把刀的向刀偏以消除向偏差
+    need_skill: false
+  - step: 首先应当设法消除精车刀的向刀偏
+    need_skill: false
+  - step: 对卧车讲把向刀偏调整在!之内是不难做到的
+    need_skill: false
+  - step: 由表!"可知当"!时造成的向偏差是很小的
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「机床刚通电而」的具体表现（机床刚通电而功放开关未合上时8轴电动机已）？
+- node_id: D131
+  name: 轴高速上不去
+  phenomena:
+  - 轴高速上不去
+  causes:
+  - desc: 由表!"可知当"!时造成的向偏差是很小的
+    probability: 高
+  solutions:
+  - step: 为保证工件加工精度应消除每把刀的向刀偏以消除向偏差
+    need_skill: false
+  - step: 首先应当设法消除精车刀的向刀偏
+    need_skill: false
+  - step: 对卧车讲把向刀偏调整在!之内是不难做到的
+    need_skill: false
+  - step: 由表!"可知当"!时造成的向偏差是很小的
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「轴高速上不去」的具体表现（轴高速上不去故障检查与分析该机床为南京大）？
+- node_id: D132
+  name: 数控车床向偏
+  phenomena:
+  - 数控车床向偏
+  causes:
+  - desc: 由表!"可知当"!时造成的向偏差是很小的
+    probability: 高
+  solutions:
+  - step: 为保证工件加工精度应消除每把刀的向刀偏以消除向偏差
+    need_skill: false
+  - step: 首先应当设法消除精车刀的向刀偏
+    need_skill: false
+  - step: 对卧车讲把向刀偏调整在!之内是不难做到的
+    need_skill: false
+  - step: 由表!"可知当"!时造成的向偏差是很小的
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「数控车床向偏」的具体表现（数控车床向偏差故障检查与分析图"0示出以）？
+- node_id: D133
+  name: 轴出错致使刀
+  phenomena:
+  - 轴出错致使刀
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 将脱落的销子重新联结后，故障排除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「轴出错致使刀」的具体表现（6轴出错致使刀具损坏故障检查与分析该机床）？
+- node_id: D134
+  name: 不准
+  phenomena:
+  - 不准
+  causes:
+  - desc: 由于目前经济型数控系统已经普遍采用模块化结构
+    probability: 高
+  - desc: 因轴驱动板肯定是好的
+    probability: 中
+  solutions:
+  - step: 更换一块新的驱动板后，故障排除
+    need_skill: true
+  - step: 本例故障的检查思路是这样
+    need_skill: false
+  - step: 因轴驱动板肯定是好的，用它去替换轴驱动板，如果故障仍然反应在轴，说明故障源不在轴驱动板上
+    need_skill: true
+  - step: 如果故障反应在轴去了，说明换到轴去的轴驱动板是坏的
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「不准」的具体表现（轴定位不准故障检查与分析该机床为我们采用）？
+- node_id: D135
+  name: 摆动
+  phenomena:
+  - 摆动
+  causes:
+  - desc: 更换电动机的同时把对油垫相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换电动机的同时把对油垫圈和可能向电动机涌油的各种机械部件进行处理后，故障排除
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「摆动」的具体表现（开机后轴就来回摆动故障检查与分析--01）？
+- node_id: D136
+  name: 轴只能单向运
+  phenomena:
+  - 轴只能单向运
+  causes:
+  - desc: 更换一块功率推动板后，故相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换一块功率推动板后，故障排除
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「轴只能单向运」的具体表现（轴只能单向运行故障检查与分析该机床为美国）？
+- node_id: D137
+  name: 抖动
+  phenomena:
+  - 抖动
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 经查坐标轴向定位松动，机械处理后，故障排除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「抖动」的具体表现（轴无进给命令自动上下抖动故障检查与分析该）？
+- node_id: D138
+  name: 振动
+  phenomena:
+  - 振动
+  causes:
+  - desc: 更换新电刷后故障排除。相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换新电刷后故障排除
+    need_skill: true
+  - step: 说明：通过对全闭环直流伺服系统的理论与实践处理，可认为理论对实践的指导作用是不可忽视的
+    need_skill: true
+  - step: 在此条件下，可以减少盲目性，提高准确性，缩短维修时间
+    need_skill: true
+  - step: 可以说，这种·677!·理论与实践的结合对于维修工程师是行之有效的方法
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「振动」的具体表现（轴无规律振动故障检查与分析该机床为-’’）？
+- node_id: D139
+  name: 电源停止
+  phenomena:
+  - 电源停止
+  - 停止
+  causes:
+  - desc: 调整在"5$))左右，则相关部件异常
+    probability: 高
+  solutions:
+  - step: 将该接近开关与感应挡铁的间隙调整在"5左右，则机床恢复正常，故障排除了
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「电源停止」的具体表现（在加工过程中主轴不能按指令要求进行正常的）？
+- node_id: D140
+  name: 主轴报警
+  phenomena:
+  - 主轴报警
+  - 报警
+  causes:
+  - desc: 因为环境灰尘多
+    probability: 高
+  solutions:
+  - step: 通过以上分析，借助于示波器观察其移相触发器的波形，试调0，试车，观察到电动机打火明显减少
+    need_skill: true
+  - step: 我们又对
+    need_skill: false
+  - step: 10进行重新调整，使移相触发器234的波形达到图516所示波形，再试车，故障排除
+    need_skill: true
+  - step: 这种故障就是因为环境灰尘多，机床工作时间长，温度较高，使得主轴驱动线路板上的某些元件参数漂
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「主轴报警」的具体表现（该机床在接通电源后在手动手动数据输入和自）？
+- node_id: D141
+  name: 不转
+  phenomena:
+  - 不转
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 说明：!当再度设主轴’，驱动能正常执行，也即第一次修改转速以后，一切都恢复正常
+    need_skill: true
+  - step: 在其余二台数控车调试中也出现同样情况
+    need_skill: false
+  - step: 都是通过改变一次主轴转速的设定启才能实现主驱动及伺服运动
+    need_skill: true
+  - step: '"这次故障的排除有它的偶然性，也有它的必然性，偶然性是在我们并不了解报警的内涵，也不掌握处理方法，故障的排除只是碰巧'
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「不转」的具体表现（启动主轴驱动无论是正转还是反转都不转"显）？
+- node_id: D142
+  name: 刀架不到位
+  phenomena:
+  - 刀架不到位
+  - 换刀不到位
+  - 不到位
+  causes:
+  - desc: 更换，使机床恢复正常使用相关部件异常
+    probability: 高
+  solutions:
+  - step: 用备用电动机更换，使机床恢复正常使用
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「刀架不到位」的具体表现（刀架转动不到位在最初发生这个故障时是在机）？
+- node_id: D143
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 由于编码器输出位开关信号
+    probability: 高
+  - desc: 由于编码器在约-度范围内转动时
+    probability: 中
+  solutions:
+  - step: 由于编码器输出位开关信号，’以二进制码对刀具绝对编码，改’程序可以调整刀码，但要请机床制造厂家来完成
+    need_skill: true
+  - step: 花费大，维修周期长，此法不考虑
+    need_skill: false
+  - step: 除此之外采用以下两种方法均可使刀号调整正常：让刀架固定在某刀具号6上，脱开编码器与刀架驱动电动机之间的齿轮连接
+    need_skill: true
+  - step: 旋转编码器使其编码与刀架固定的刀号6一致，再将编码器与刀架连接即可
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（换刀时刀架转几周后才能换到所需的刀号位置）？
+- node_id: D144
+  name: 该机床发生碰
+  phenomena:
+  - 该机床发生碰
+  causes:
+  - desc: 由于编码器输出位开关信号
+    probability: 高
+  - desc: 由于编码器在约-度范围内转动时
+    probability: 中
+  solutions:
+  - step: 由于编码器输出位开关信号，’以二进制码对刀具绝对编码，改’程序可以调整刀码，但要请机床制造厂家来完成
+    need_skill: true
+  - step: 花费大，维修周期长，此法不考虑
+    need_skill: false
+  - step: 除此之外采用以下两种方法均可使刀号调整正常：让刀架固定在某刀具号6上，脱开编码器与刀架驱动电动机之间的齿轮连接
+    need_skill: true
+  - step: 旋转编码器使其编码与刀架固定的刀号6一致，再将编码器与刀架连接即可
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「该机床发生碰」的具体表现（该机床发生碰撞事故后刀架在垂直导轨方向上）？
+- node_id: D145
+  name: 停止
+  phenomena:
+  - 停止
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 拆开转位刀架后罩，检查奇偶校验开关及接线均正常，接着检查由开关到数控系统!"板的线路，发现电箱内接线
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「停止」的具体表现（在机床调试过程中无论手动9或自动循环刀架）？
+- node_id: D146
+  name: 一号刀架出现
+  phenomena:
+  - 一号刀架出现
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 在刀架卡锁死的情况下，必须把刀架到位信号线断开（注：在机床断电以后）
+    need_skill: true
+  - step: 然后机床再通电，任意选一刀号，输入换刀指令，让刀架松开，此时刀架处在自由转动状态
+    need_skill: true
+  - step: 断电，拆下原来的编码器，按原来的接法把新编码器与机床的连线接好，刀架与编码器轴联接好，不要固定编码器
+    need_skill: true
+  - step: 对应的编码由四位二进制组成，有一个4位12输入口组成
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「一号刀架出现」的具体表现（一号刀架出现了偶而找不到刀的故障刀架处在）？
+- node_id: D147
+  name: 系统发出换刀
+  phenomena:
+  - 系统发出换刀
+  causes:
+  - desc: 更换霍尔元件后，故障排除相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换霍尔元件后，故障排除
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「系统发出换刀」的具体表现（系统发出换刀指令后上刀体连续运转不停或在）？
+- node_id: D148
+  name: 刀架电动机起
+  phenomena:
+  - 刀架电动机起
+  causes:
+  - desc: 更换轴承，修复离合器，故相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换轴承，修复离合器，故障排除
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「刀架电动机起」的具体表现（刀架电动机起不动刀架不能动作故障检查与分）？
+- node_id: D149
+  name: 不转
+  phenomena:
+  - 不转
+  causes:
+  - desc: 更换了原刀架，恢复了定位相关部件异常
+    probability: 高
+  solutions:
+  - step: 以陕西省机械研究院生产的牌，型号-26’2卧式数控电动刀架更换了原刀架，恢复了定位精度，经使用一年多来，一直正常
+    need_skill: true
+  - step: 只是信息的沟通方面尚需加强，才能使生产厂家产品有销路，使用单位有地方购买
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「不转」的具体表现（上刀体抬起但不转动故障检查与分析该机床为）？
+- node_id: D150
+  name: 刀架不准
+  phenomena:
+  - 刀架不准
+  - 不准
+  causes:
+  - desc: 更换了原刀架，恢复了定位相关部件异常
+    probability: 高
+  solutions:
+  - step: 以陕西省机械研究院生产的牌，型号-26’2卧式数控电动刀架更换了原刀架，恢复了定位精度，经使用一年多来，一直正常
+    need_skill: true
+  - step: 只是信息的沟通方面尚需加强，才能使生产厂家产品有销路，使用单位有地方购买
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「刀架不准」的具体表现（刀架定位不准故障检查与分析330匈牙利数）？
+- node_id: D151
+  name: 刀架不换刀
+  phenomena:
+  - 刀架不换刀
+  - 不换刀
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 查换刀信号，在微机柜的航空插头处找到了脱焊的点，重新焊接后，故障排除
+    need_skill: true
+  - step: 说明："固原刀架控制箱装在刀架大拖板下方的进给齿轮箱留下的空档内
+    need_skill: true
+  - step: 随机床一起运动
+    need_skill: false
+  - step: 这二根信号线，连接环节特别多，是故障多发部位
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「刀架不换刀」的具体表现（机床在自动加工过程中当运行到换刀程序段时）？
+- node_id: D152
+  name: 停止
+  phenomena:
+  - 停止
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 把刀架一端的屏蔽接地彻底去除，将刀架信号电缆的屏蔽层的另一端接在刀架控制箱上，此箱的接地有专线与数控柜接地线相连
+    need_skill: true
+  - step: 经此处理后，“”信号不再出现，故障排除
+    need_skill: false
+  - step: 说明：感性负载在接通或断开时产生的反电势，前沿很陡，属于迅速变化的强脉冲
+    need_skill: true
+  - step: 触点通断时产生的电火花，属于一种高频振荡信号
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「停止」的具体表现（机床在自动加工中有时在换刀前有时在换刀后）？
+- node_id: D153
+  name: 刀架不动
+  phenomena:
+  - 刀架不动
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 按上述相关问题解决
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「刀架不动」的具体表现（刀架不动故障检查与分析造成刀架不动的原因）？
+- node_id: D154
+  name: 刀架旋转不停
+  phenomena:
+  - 刀架旋转不停
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 按上述相关问题解决
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「刀架旋转不停」的具体表现（刀架旋转不停故障检查与分析刀架刀位信号未）？
+- node_id: D155
+  name: 刀架越位
+  phenomena:
+  - 刀架越位
+  - 越位
+  causes:
+  - desc: 因予以解决
+    probability: 高
+  solutions:
+  - step: 针对检查的具体原因予以解决
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「刀架越位」的具体表现（刀架越位故障检查与分析反靠装置不起作用应）？
+- node_id: D156
+  name: 刀架不到位
+  phenomena:
+  - 刀架不到位
+  - 不到位
+  causes:
+  - desc: 调整发讯盘与弹簧片触点位相关部件异常
+    probability: 高
+  solutions:
+  - step: 重新调整发讯盘与弹簧片触点位置，锁紧螺母
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「刀架不到位」的具体表现（刀架转不到位故障检查与分析发讯盘触点与弹）？
+- node_id: D157
+  name: 加工过程中刀
+  phenomena:
+  - 加工过程中刀
+  causes:
+  - desc: 更换一只霍尔元件后，故障相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换一只霍尔元件后，故障排除
+    need_skill: true
+  - step: 说明：在屯动刀架中，霍尔元件是一个关键的定位检测元件，它的好坏对于电动刀架准确地选择刀号，完成零件的加工有十分重要的作用
+    need_skill: true
+  - step: 因此，对于电动刀架的定位故障，首先应考虑检查霍尔元件
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「加工过程中刀」的具体表现（加工过程中刀具损坏故障检查与分析该机床为）？
+- node_id: D158
+  name: 刀架不准
+  phenomena:
+  - 刀架不准
+  - 不准
+  causes:
+  - desc: 调整好，即将!个霍尔元件相关部件异常
+    probability: 高
+  solutions:
+  - step: 重新将松动的电路板按刀号调整好，即将!个霍尔元件开关与感应元件逐一对应，然后锁紧螺母，故障排除
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「刀架不准」的具体表现（电动刀架定位不准故障检查与分析该机床为我）？
+- node_id: D159
+  name: 不能控制
+  phenomena:
+  - 不能控制
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 拆开电动刀架，用压缩空气将电动刀架定位齿盘上的铁屑吹干净，重新装配好电动刀架
+    need_skill: true
+  - step: 故障排除
+    need_skill: false
+  - step: 说明：在经济型数控机床中，电动刀架定位齿盘内常会进入一些细小的铁屑，这些铁屑在定位齿盘内是随电动刀架的转动而移动不定的
+    need_skill: true
+  - step: 因此，在故障现象的反应上就表现为加工尺寸变化不定
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「不能控制」的具体表现（加工尺寸不能控制故障检查与分析该机床为我）？
+- node_id: D160
+  name: 刀架报警
+  phenomena:
+  - 刀架报警
+  - 报警
+  causes:
+  - desc: 更换一新的集成电路块后，相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换一新的集成电路块后，故障排除
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「刀架报警」的具体表现（刀架奇偶报警故障检查与分析该机床为南京机）？
+- node_id: D161
+  name: 刀架失控
+  phenomena:
+  - 刀架失控
+  - 报警
+  - 失控
+  - 停止
+  causes:
+  - desc: 更换)*!+#后故障排除相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换!后故障排除
+    need_skill: true
+  - step: 第五节其它部位故障实例与诊断
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「刀架失控」的具体表现（加工中突然出现转塔刀架旋转失控现象发生故）？
+- node_id: D162
+  name: 不到位
+  phenomena:
+  - 不到位
+  - 抖动
+  causes:
+  - desc: 调整系统压力及行程开关位相关部件异常
+    probability: 高
+  solutions:
+  - step: 调整系统压力及行程开关位置，检查芯轴与尾座壳体孔的间隙并修复至要求
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「不到位」的具体表现（尾座移动时尾座芯轴出现抖动且行程不到位故）？
+- node_id: D163
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 调整系统压力至要求，检修相关部件异常
+    probability: 高
+  solutions:
+  - step: 调整系统压力至要求，检修液压缸的内泄及控制回路动作情况，检查卡盘各摩擦副的滑动情况，卡盘仍然夹紧力不
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（液压卡盘夹紧力不足卡盘失压监视不报警故障）？
+- node_id: D164
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 更换一新的压力继电器，故相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换一新的压力继电器，故障排除
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（尾座套简报警故障检查与分析该机床为南京机）？
+- node_id: D165
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 更换了故障传感器/0’1相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换了故障传感器0’1后，机床一切工作正常
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（开动机床走参考点时出现号报警故障检查与分）？
+- node_id: D166
+  name: 轴不能工作
+  phenomena:
+  - 轴不能工作
+  causes:
+  - desc: 因机床中断!轴处于正常行程范围内
+    probability: 高
+  solutions:
+  - step: 因机床中断!轴处于正常行程范围内，检查!轴超程开关至"输入点间连线正常，最后在"输入端将!轴正向超程
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「轴不能工作」的具体表现（7轴不能工作故障检查与分析沈阳三机床生产）？
+- node_id: D167
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 因机床中断!轴处于正常行程范围内
+    probability: 高
+  solutions:
+  - step: 因机床中断!轴处于正常行程范围内，检查!轴超程开关至"输入点间连线正常，最后在"输入端将!轴正向超程
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（在机床完成一段加工工序退回准备换刀时中断）？
+- node_id: D168
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 清理排气扇电动机后，报警消失
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（报警故障检查与分析该机床为美国"公司的数）？
+- node_id: D169
+  name: 不稳定
+  phenomena:
+  - 不稳定
+  causes:
+  - desc: 因是排故的第一步
+    probability: 高
+  - desc: 原因是排故的第一步
+    probability: 中
+  solutions:
+  - step: 将故障部位-号线接好，故障排除
+    need_skill: false
+  - step: ··第二章数控铣床维修实例第一节概述数控铣床的故障诊断维修技术随着数控技术的发展而不断完善，诊断维修方法也发生了很大变化
+    need_skill: true
+  - step: 发现故障原因是排故的第一步，并且是最重要的一步
+    need_skill: false
+  - step: 第一篇文章中列举的诊断维修方法各有特点，有时一个故障的发生往往需要采用几种方法交替使用才能查出故障的原因
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「不稳定」的具体表现（轴进给不稳定·3·故障检查与分析该机床为）？
+- node_id: D170
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 调整必要的机床数相关部件异常
+    probability: 高
+  solutions:
+  - step: 重新通电启机，故障排除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（机床在正常加工过程中系统经常因故同时发生）？
+- node_id: D171
+  name: 电动机发热
+  phenomena:
+  - 电动机发热
+  - 发热
+  - 不工作
+  causes:
+  - desc: 因素的综合结果
+    probability: 高
+  - desc: 由于压板和塞铁等机械零件产生的摩擦力而加到电动机上的负载
+    probability: 中
+  solutions:
+  - step: 懂得以上这些道理后，我们就做了以下二项工作
+    need_skill: false
+  - step: '!正确设置号参数'
+    need_skill: false
+  - step: 各轴的!号参数值全部按该原则重新调整
+    need_skill: false
+  - step: '!正确调整各轴压板、塞铁等部件的紧松'
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「电动机发热」的具体表现（机床工作台工作时发现4轴电动机严重发热无）？
+- node_id: D172
+  name: 主轴停止
+  phenomena:
+  - 主轴停止
+  - 噪声
+  - 停止
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 我们发现从机械上去解决是极为困难的：平衡锤加多重后才够了？即便知道了这个数值，拆卸、装配、加重的工程量也是很大的
+    need_skill: true
+  - step: 还有，配重增加后还有可能缩短轴的行程
+    need_skill: false
+  - step: 这些困难促使我们考虑通过其他途径解决轴振荡
+    need_skill: false
+  - step: 显然，"号参数是不能人为地使它为零的
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「主轴停止」的具体表现（主轴箱下降到位停止后4轴电机就会发出电磁）？
+- node_id: D173
+  name: 系统报警
+  phenomena:
+  - 系统报警
+  - 报警
+  causes:
+  - desc: 问题在维护保养过程中是极易发生的错误
+    probability: 高
+  solutions:
+  - step: 将!轴电动机装于机床上，安装调好挠性联轴节，通电试车，故障排除
+    need_skill: true
+  - step: ·4’·据了解，发生此类故障的原因，系维修人员在电机维护保养时，不慎将此位置弄错
+    need_skill: true
+  - step: 事实上这一类问题在维护保养过程中是极易发生的错误
+    need_skill: false
+  - step: 应采用外部刻线标记加以避免
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「系统报警」的具体表现（手动方式工作中当轴向选择轴运行操作时手摇）？
+- node_id: D174
+  name: 系统不能移动
+  phenomena:
+  - 系统不能移动
+  - 不能移动
+  - 报警
+  - 窜动
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 打开的电动机防护罩检查，发现与伺服电动机相连接的位置反馈电缆插头松动
+    need_skill: true
+  - step: 将松动插头扭紧，并将伺服驱动系统恢复原接线，然后重新送电启动机床，伺服坐标的灯报警消失，机床恢复正常运转
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「系统不能移动」的具体表现（据操作工人反映在加工零件时切削量稍大时机）？
+- node_id: D175
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 由于数控系统上广泛采用的"板
+    probability: 高
+  - desc: 弄不好极易造成故障的扩大
+    probability: 中
+  solutions:
+  - step: 更换逆变模块的同时，将接触器!""也同时更换，故障排除
+    need_skill: true
+  - step: 另外，对于"板上损坏的元器件的更换问题，建议切勿盲目采用熔开焊点拆除原器件的更换方法
+    need_skill: true
+  - step: 为确保更换板上元器件的可靠进行，可采用下述介绍的经实践证明确实可行的方法
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（自动方式运行中系统因电网瞬间跳闸而中断恢）？
+- node_id: D176
+  name: 电动机转不动
+  phenomena:
+  - 电动机转不动
+  - 报警
+  - 转不动
+  causes:
+  - desc: ·5560·造成丝杠不能转动
+    probability: 高
+  solutions:
+  - step: 拆卸间隙调整压板，取出2型外滚道钢管，就能轻松的旋出滚珠丝杠或螺母，修整2型外滚道管
+    need_skill: true
+  - step: 2型外滚道管是由壁厚344铬钢管制成，直径、内径，要求钢球装进去能从另一头倒出来
+    need_skill: true
+  - step: 且冲力逐渐减小，还是达不到一口装入钢球能从另一口例出的程度，但钢球在管内紧的部分越来越少了
+    need_skill: true
+  - step: 用工具钢车制!"的钢球，火焰淬火后放在管口冲下去，再放
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「电动机转不动」的具体表现（1轴电动机转不动一开动1轴电动机就报警工）？
+- node_id: D177
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 更换，并清除炭粉污染影响相关部件异常
+    probability: 高
+  solutions:
+  - step: 将磨损电刷更换，并清除炭粉污染影响
+    need_skill: true
+  - step: 通电试机，故障消除
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（机床自动工作中系统因瞬间跳闸而停机恢复供）？
+- node_id: D178
+  name: 工作台振动
+  phenomena:
+  - 工作台振动
+  - 系统报警
+  - 振动
+  - 报警
+  causes:
+  - desc: 更换，并清除炭粉污染影响相关部件异常
+    probability: 高
+  solutions:
+  - step: 将磨损电刷更换，并清除炭粉污染影响
+    need_skill: true
+  - step: 通电试机，故障消除
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「工作台振动」的具体表现（自动或手动方式运行时发现机床工作台轴运行）？
+- node_id: D179
+  name: 系统报警
+  phenomena:
+  - 系统报警
+  - 报警
+  causes:
+  - desc: 因此类故障涉及设备制造质量问题
+    probability: 高
+  solutions:
+  - step: 因此类故障涉及设备制造质量问题，经与厂家联系，另补发一只伺服控制电源变压器
+    need_skill: true
+  - step: 经安装调试后，投入使用近年，故障彻底排除
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「系统报警」的具体表现（机床按程序加工切削运行时发现工作台6轴位）？
+- node_id: D180
+  name: 系统报警
+  phenomena:
+  - 系统报警
+  - 报警
+  causes:
+  - desc: 因此类故障涉及设备制造质量问题
+    probability: 高
+  solutions:
+  - step: 因此类故障涉及设备制造质量问题，经与厂家联系，另补发一只伺服控制电源变压器
+    need_skill: true
+  - step: 经安装调试后，投入使用近年，故障彻底排除
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「系统报警」的具体表现（机床无论处于自动方式或手动方式工作时一旦）？
+- node_id: D181
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 紧固一遍，再开机，故障消相关部件异常
+    probability: 高
+  solutions:
+  - step: 将电动机换到另一台铣床试验，振动很小
+    need_skill: false
+  - step: 将两机床轴速度控制单元交换，也没有振动发生，判断为外部连接问题
+    need_skill: true
+  - step: 将连接器重新紧固一遍，再开机，故障消除
+    need_skill: false
+  - step: 电动机运行个月没有问题，证明了电动机粘接修复的成功
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（0轴电动机—运转就会发出“哒哒哒”的连续）？
+- node_id: D182
+  name: 系统报警
+  phenomena:
+  - 系统报警
+  - 报警
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 我们将触点修整后，FCD电源能正常送入A!-板
+    need_skill: false
+  - step: 再一次起动数控系统，29显示器上!-、!号故障报警消失，机床恢复正常
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「系统报警」的具体表现（启动机床数控系统后29上显示-号报警故障）？
+- node_id: D183
+  name: 不能移动
+  phenomena:
+  - 不能移动
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 将该线焊接好后，再检查点动负方向，在真值表上显示为接通为"，断开为
+    need_skill: true
+  - step: 这说明行列矩阵的第列线已经接通，根据行列矩阵的原理，循环启动信号也应接通
+    need_skill: true
+  - step: 开机试车，果然、、0轴均恢复正常
+    need_skill: false
+  - step: 故障排除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「不能移动」的具体表现（’轴均不能移动故障检查与分析HI系统是辽）？
+- node_id: D184
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 更换一新模块后，45(报相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换一新模块后，45报警消除，直流电动机恢复正常工作
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（0轴伺服准备接触器不能吸合45报警故障检）？
+- node_id: D185
+  name: 抖动
+  phenomena:
+  - 抖动
+  causes:
+  - desc: 由于齿轮噪声的产生是多因素引起的
+    probability: 高
+  - desc: 因素是齿轮的设计参数所决定的
+    probability: 中
+  - desc: 由于齿形误差和法向周节的影响
+    probability: 低
+  solutions:
+  - step: ）齿轮的噪声控制由于齿轮噪声的产生是多因素引起的，其中有些因素是齿轮的设计参数所决定的
+    need_skill: true
+  - step: 针对该机床出现的主轴运
+    need_skill: false
+  - step: 动系统的齿轮噪声的特点，在不改变原设计的基础上，在原有齿轮上进行修整和改进的一些做法
+    need_skill: true
+  - step: '!齿顶修缘'
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「抖动」的具体表现（机床在加工或快速移动时轴与轴电动机声音异）？
+- node_id: D186
+  name: 主轴抖动
+  phenomena:
+  - 主轴抖动
+  - 抖动
+  causes:
+  - desc: 由于上述故障是常见易发故障
+    probability: 高
+  - desc: 此故障一旦发生还容易造成滚珠丝杆、支承的损伤
+    probability: 中
+  - desc: 故障是常见易发故障
+    probability: 低
+  solutions:
+  - step: 采用同型号规格的轴承替换后，故障排除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「主轴抖动」的具体表现（低速起动时主轴抖动很大高速时却正常故障检）？
+- node_id: D187
+  name: 在轴与轴联动
+  phenomena:
+  - 在轴与轴联动
+  causes:
+  - desc: 丢失反馈信号所致
+    probability: 高
+  solutions:
+  - step: 采用同型号规格的轴承替换后，故障排除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「在轴与轴联动」的具体表现（在轴与-轴联动工作中当主轴执行指令加工工）？
+- node_id: D189
+  name: 系统报警
+  phenomena:
+  - 系统报警
+  - 报警
+  causes:
+  - desc: 调整导轨塞铁，装上!轴电相关部件异常
+    probability: 高
+  solutions:
+  - step: 说明：机床使用多年，为提高整机性能，消除故障隐患，对机床应进行二级保养
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「系统报警」的具体表现（机床自动或手动操作运行中系统经常因故发生）？
+- node_id: D190
+  name: 工作台振动
+  phenomena:
+  - 工作台振动
+  - 系统报警
+  - 抖动
+  - 振动
+  causes:
+  - desc: 因伺服系统位置环开路
+    probability: 高
+  - desc: 故而造成工作台!轴
+    probability: 中
+  solutions:
+  - step: 由于断线故障点在旋转变压器的定子外部，故可采用外部断线连接工艺处理
+    need_skill: true
+  - step: 将电机重新装配后，经试机一切正常，故障消除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「工作台振动」的具体表现（手动方式操作过程中发现工作台轴轴向进给运）？
+- node_id: D191
+  name: 抖动
+  phenomena:
+  - 抖动
+  - 振动
+  - 报警
+  causes:
+  - desc: 因故障发生时
+    probability: 高
+  - desc: 因该滚珠丝杆副刚维护
+    probability: 中
+  solutions:
+  - step: 此类故障原因虽经查明，但修复还须格外仔细
+    need_skill: false
+  - step: 参照上述介绍的滚珠丝杆副的修理工艺，先将滚动弹子逐粒测量选配后，再按工艺步骤重新装配，调整预加载荷
+    need_skill: true
+  - step: 经装机调试后，故障消除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「抖动」的具体表现（手动方式运行时发现工作台轴方向运行时存在）？
+- node_id: D192
+  name: 工作台抖动
+  phenomena:
+  - 工作台抖动
+  - 抖动
+  - 振动
+  - 报警
+  causes:
+  - desc: 由于工作台的轴、轴及7轴等8个轴向在单独快速回机床系统原点时不产生机械振动或抖
+    probability: 高
+  solutions:
+  - step: 将断头焊好，故障排除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「工作台抖动」的具体表现（机床在轴轴及7轴分别回机床系统原点后再三）？
+- node_id: D193
+  name: 工作台振动
+  phenomena:
+  - 工作台振动
+  - 振动
+  causes:
+  - desc: 调整方法以后，对$轴随动相关部件异常
+    probability: 高
+  solutions:
+  - step: 在仔细观察轴随动阀，并掌握了调整方法以后，对轴随动阀也进行了仔细的调整
+    need_skill: true
+  - step: 使它在关闭向上、向下两个阀口的中间位置状态下装入十字头，使之良好连接，注意不影响刚调好的阀杆状态
+    need_skill: true
+  - step: 并更换损坏了的油封后，装上轴步进电动机
+    need_skill: true
+  - step: 恢复轴的步进———液压转矩放大器，试车
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「工作台振动」的具体表现（机床一通电启机工作台就立即发生强烈的振动）？
+- node_id: D194
+  name: 失灵
+  phenomena:
+  - 失灵
+  causes:
+  - desc: 调整方法以后，对$轴随动相关部件异常
+    probability: 高
+  solutions:
+  - step: 在仔细观察轴随动阀，并掌握了调整方法以后，对轴随动阀也进行了仔细的调整
+    need_skill: true
+  - step: 使它在关闭向上、向下两个阀口的中间位置状态下装入十字头，使之良好连接，注意不影响刚调好的阀杆状态
+    need_skill: true
+  - step: 并更换损坏了的油封后，装上轴步进电动机
+    need_skill: true
+  - step: 恢复轴的步进———液压转矩放大器，试车
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「失灵」的具体表现（0轴液压转矩放大器随动阀经拆卸检查再装上）？
+- node_id: D195
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 问题是解决问题的第一步
+    probability: 高
+  solutions:
+  - step: 调整液压系统，使液压压力保持稳定，机床正常使用，故障被排除
+    need_skill: true
+  - step: 说明：!这个故障如果分析不准确或没有编程器的动态观测，是很难进行诊断的
+    need_skill: true
+  - step: '"这类故障属非数控系统故障，是外部故障'
+    need_skill: false
+  - step: 这类故障相对来说出现的几率较大，一般由检测元件，执行元件的损坏，或液压、气动系统出现问题，引起这类故障
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（机床在自动循环加工过程中工件已加工完工作）？
+- node_id: D196
+  name: 无显示
+  phenomena:
+  - 无显示
+  - 停止
+  causes:
+  - desc: 清洗处理），故障彻底排除相关部件异常
+    probability: 高
+  solutions:
+  - step: 经停机拆下全部继电器检查，均普遍存在触点烧黑及烧蚀现象
+    need_skill: true
+  - step: 经用酒精擦洗（对烧蚀严重的触点可采用细砂纸打磨后清洗处理），故障彻底排除
+    need_skill: true
+  - step: 建议维修人员应定期检查，形成制度，这对于消除故障隐患极为有利
+    need_skill: true
+  - step: 综上所述，接口诊断显示信号不仅能方便、可靠、迅速地帮助判断查找故障原因，有时还能反映一些实际存在的故障隐患
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「无显示」的具体表现（数控转子铣床分度操作台（如图"）发生打火）？
+- node_id: D197
+  name: 主轴失灵
+  phenomena:
+  - 主轴失灵
+  - 失灵
+  causes:
+  - desc: 清洗处理），故障彻底排除相关部件异常
+    probability: 高
+  solutions:
+  - step: 经停机拆下全部继电器检查，均普遍存在触点烧黑及烧蚀现象
+    need_skill: true
+  - step: 经用酒精擦洗（对烧蚀严重的触点可采用细砂纸打磨后清洗处理），故障彻底排除
+    need_skill: true
+  - step: 建议维修人员应定期检查，形成制度，这对于消除故障隐患极为有利
+    need_skill: true
+  - step: 综上所述，接口诊断显示信号不仅能方便、可靠、迅速地帮助判断查找故障原因，有时还能反映一些实际存在的故障隐患
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「主轴失灵」的具体表现（系统通电开机后机床按零件纸带程序进行切削）？
+- node_id: D198
+  name: 报警
+  phenomena:
+  - 报警
+  - 停止
+  causes:
+  - desc: 更换后，%!$’、%(&相关部件异常
+    probability: 高
+  solutions:
+  - step: 用一只同型号的新电解电容器将其更换后，!’、’输出正常，系统恢复
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（1通电开机后光电阅读机即发生异常报警即自）？
+- node_id: D199
+  name: 无显示
+  phenomena:
+  - 无显示
+  causes:
+  - desc: 更换后，%!$’、%(&相关部件异常
+    probability: 高
+  solutions:
+  - step: 用一只同型号的新电解电容器将其更换后，!’、’输出正常，系统恢复
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「无显示」的具体表现（"无显示故障检查与分析4—25系统是辽宁）？
+- node_id: D200
+  name: 无显示
+  phenomena:
+  - 无显示
+  causes:
+  - desc: 更换后，%!$’、%(&相关部件异常
+    probability: 高
+  solutions:
+  - step: 用一只同型号的新电解电容器将其更换后，!’、’输出正常，系统恢复
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「无显示」的具体表现（机床通电开机后"无显示检查与）？
+- node_id: D201
+  name: 报警
+  phenomena:
+  - 报警
+  - 掉电
+  causes:
+  - desc: 更换后，%!$’、%(&相关部件异常
+    probability: 高
+  solutions:
+  - step: 用一只同型号的新电解电容器将其更换后，!’、’输出正常，系统恢复
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（系统不能启动（或启动后瞬间便掉电）"无任）？
+- node_id: D202
+  name: 系统报警
+  phenomena:
+  - 系统报警
+  - 报警
+  causes:
+  - desc: 调整该参数表明：该参数值相关部件异常
+    probability: 高
+  solutions:
+  - step: 修改成原记录值再试机床正常
+    need_skill: false
+  - step: 说明：!48参数中设定值为各轴速度上限值，显然设为零时，轴不动
+    need_skill: true
+  - step: '"48中设定伺服机构位置检测器’波长，设定的目的是保证机床位移与位置检测器的一个周期·’·相一致'
+    need_skill: true
+  - step: 调整该参数表明：该参数值的变化不仅影响相应轴的移动速度，而且还影响该轴的实际移动距离
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「系统报警」的具体表现（系统“死机”号报警故障检查与分析查机床操）？
+- node_id: D203
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 调整该参数表明：该参数值相关部件异常
+    probability: 高
+  solutions:
+  - step: 修改成原记录值再试机床正常
+    need_skill: false
+  - step: 说明：!48参数中设定值为各轴速度上限值，显然设为零时，轴不动
+    need_skill: true
+  - step: '"48中设定伺服机构位置检测器’波长，设定的目的是保证机床位移与位置检测器的一个周期·’·相一致'
+    need_skill: true
+  - step: 调整该参数表明：该参数值的变化不仅影响相应轴的移动速度，而且还影响该轴的实际移动距离
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（机床开机显示号报警故障检查与分析5"1—）？
+- node_id: D204
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 从01购买了一个新的测速发电机转子，换上后恢复正常
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（执行68指令立卧转换动作中断出现报警22）？
+- node_id: D205
+  name: 掉电
+  phenomena:
+  - 掉电
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 从01购买了一个新的测速发电机转子，换上后恢复正常
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「掉电」的具体表现（485卧式加工中心在工作中多次发生掉电故）？
+- node_id: D206
+  name: 无显示
+  phenomena:
+  - 无显示
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 从01购买了一个新的测速发电机转子，换上后恢复正常
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「无显示」的具体表现（机床送电-无显示查电源01"0101均无）？
+- node_id: D207
+  name: 当机床通电后
+  phenomena:
+  - 当机床通电后
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 从01购买了一个新的测速发电机转子，换上后恢复正常
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「当机床通电后」的具体表现（当机床通电后各轴需首先都回到参考点处机床）？
+- node_id: D208
+  name: 不准
+  phenomena:
+  - 不准
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 从01购买了一个新的测速发电机转子，换上后恢复正常
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「不准」的具体表现（有两台加工中心一台是-—397加工中心轴）？
+- node_id: D209
+  name: 机床送电轴电
+  phenomena:
+  - 机床送电轴电
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 从01购买了一个新的测速发电机转子，换上后恢复正常
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「机床送电轴电」的具体表现（机床（）送电轴电动机即工作造成冲击震荡故）？
+- node_id: D210
+  name: 振动
+  phenomena:
+  - 振动
+  - 噪声
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 从01购买了一个新的测速发电机转子，换上后恢复正常
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「振动」的具体表现（轴在静止时不振动在运动中出现较强振动伴有）？
+- node_id: D211
+  name: 振动
+  phenomena:
+  - 振动
+  - 停止
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 认真清洁粘接表面后，用""组胶重新粘接，故障消除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「振动」的具体表现（该机坐标轴在运动时速度不稳当停止的指令发）？
+- node_id: D213
+  name: 掉电
+  phenomena:
+  - 掉电
+  causes:
+  - desc: 因电缆很长
+    probability: 高
+  solutions:
+  - step: 因电缆很长，更换工作量大，查电气线路图发现电缆内有备用线，用其替代断线后，机床恢复正常
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「掉电」的具体表现（轴主回路烧保险且伴有机床突然掉电现象故障）？
+- node_id: D214
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 因电缆很长
+    probability: 高
+  solutions:
+  - step: 因电缆很长，更换工作量大，查电气线路图发现电缆内有备用线，用其替代断线后，机床恢复正常
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（当轴运动到某一点时液压自动释放且出现报警）？
+- node_id: D215
+  name: 伺服单元报警
+  phenomena:
+  - 伺服单元报警
+  - 报警
+  causes:
+  - desc: 更换一晶体管模块后，故障相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换一晶体管模块后，故障排除
+    need_skill: true
+  - step: ·8B"·
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「伺服单元报警」的具体表现（"号报警同时伺服单元报警显示“’”故障检）？
+- node_id: D216
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 该板上接触器的线圈直接通过插接式连接器的一个脚’1!!与上层控制板相连（如图’12）
+    need_skill: true
+  - step: 我们直接通过!和’1!!这两个脚给线圈加!!交·2!·流控制电压，过一段时间后就发现!""有失电现象，说明线包有缺陷
+    need_skill: true
+  - step: 重新绕制线圈后机床恢复正常
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（正常加工过程中34画面上突然出现5’报警）？
+- node_id: D217
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 紧固，故障排除。相关部件异常
+    probability: 高
+  solutions:
+  - step: 将其连接齿轮紧固，故障排除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（轴速度异常’号’号和号报警故障检查与分析）？
+- node_id: D218
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 紧固螺母，滚珠丝杠不再窜相关部件异常
+    probability: 高
+  solutions:
+  - step: 拧好紧固螺母，滚珠丝杠不再窜动，则故障排除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（启动液压后手动运行轴时液压自动中断"9显）？
+- node_id: D219
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 更换两个损坏的厚膜集成电相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换两个损坏的厚膜集成电路01233后，故障排除
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（"上电起动完成后伺服系统一进入准备状态立）？
+- node_id: D220
+  name: 振动
+  phenomena:
+  - 振动
+  causes:
+  - desc: 更换之后，伺服放大器恢复相关部件异常
+    probability: 高
+  solutions:
+  - step: 使用422在线测试仪，重点对板上与驱动模块有关的结点进行检查、比较，很快就发现有一个厚膜驱动块（型号：’54）损坏
+    need_skill: true
+  - step: 更换之后，伺服放大器恢复正常
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「振动」的具体表现（585起动完成伺服一进入准备状态轴即快速）？
+- node_id: D221
+  name: 电动机振动
+  phenomena:
+  - 电动机振动
+  - 振动
+  - 报警
+  - 噪声
+  causes:
+  - desc: 调整全是以参数形式存放在相关部件异常
+    probability: 高
+  solutions:
+  - step: '"’数控系统已将速度环，电流环的运算数字化，有关的一些调整全是以参数形式存放在中的'
+    need_skill: true
+  - step: 为此我们调出参数画面，并与原机配置的参数表对照，重点查伺服环路增益方面的参数
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「电动机振动」的具体表现（在整机起动完成进入可操作状态后7轴只要一）？
+- node_id: D222
+  name: 轴正方向超过
+  phenomena:
+  - 轴正方向超过
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: ）打开电控柜，用一段导线使!的触点和触点’接通，3轴电动机抱闸松开
+    need_skill: true
+  - step: ）打开平衡缸回流阀，注意流量不能过大，油压表的压力不能低于1ABC，一旦油压表的压力低于1ABC，关闭平衡缸回流阀
+    need_skill: true
+  - step: 4）在打开平衡缸回流阀的同时，转动丝杠，使3轴下降，注意3轴电动机抱闸松开、打开平衡缸回流阀、转动丝杠动作要协调
+    need_skill: true
+  - step: D）油压表的压力低于1ABC，关闭平衡缸回流阀
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「轴正方向超过」的具体表现（3轴正方向超过换刀点后不管你按345或3）？
+- node_id: D223
+  name: 系统不稳定
+  phenomena:
+  - 系统不稳定
+  - 不稳定
+  causes:
+  - desc: 更换系统总线板后，故障排相关部件异常
+    probability: 高
+  solutions:
+  - step: 将该系统发送辽宁精密仪器厂数控分厂维修，检查系数控系统总线接触不良，更换系统总线板后，故障排除
+    need_skill: true
+  - step: ·88·第三节刀库、机械手部分故障实例与诊断
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「系统不稳定」的具体表现（3轴运行时半圈快半圈慢经测量伺服系统运行）？
+- node_id: D224
+  name: 停止
+  phenomena:
+  - 停止
+  causes:
+  - desc: 更换系统总线板后，故障排相关部件异常
+    probability: 高
+  solutions:
+  - step: 将该系统发送辽宁精密仪器厂数控分厂维修，检查系数控系统总线接触不良，更换系统总线板后，故障排除
+    need_skill: true
+  - step: ·88·第三节刀库、机械手部分故障实例与诊断
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「停止」的具体表现（轴伺服电动机启动转一会接线盒处冒烟机床停）？
+- node_id: D225
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 更换系统总线板后，故障排相关部件异常
+    probability: 高
+  solutions:
+  - step: 将该系统发送辽宁精密仪器厂数控分厂维修，检查系数控系统总线接触不良，更换系统总线板后，故障排除
+    need_skill: true
+  - step: ·88·第三节刀库、机械手部分故障实例与诊断
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（有一台加工中心上班通电后显示一切正常但轴）？
+- node_id: D226
+  name: 轴自动方式时
+  phenomena:
+  - 轴自动方式时
+  causes:
+  - desc: 更换系统总线板后，故障排相关部件异常
+    probability: 高
+  solutions:
+  - step: 将该系统发送辽宁精密仪器厂数控分厂维修，检查系数控系统总线接触不良，更换系统总线板后，故障排除
+    need_skill: true
+  - step: ·88·第三节刀库、机械手部分故障实例与诊断
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「轴自动方式时」的具体表现（’轴自动方式时经常出现不执行等待状态故障）？
+- node_id: D227
+  name: 启动机床轴就
+  phenomena:
+  - 启动机床轴就
+  causes:
+  - desc: 更换系统总线板后，故障排相关部件异常
+    probability: 高
+  solutions:
+  - step: 将该系统发送辽宁精密仪器厂数控分厂维修，检查系数控系统总线接触不良，更换系统总线板后，故障排除
+    need_skill: true
+  - step: ·88·第三节刀库、机械手部分故障实例与诊断
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「启动机床轴就」的具体表现（启动机床’3轴就快速移动故障检查及分析该）？
+- node_id: D228
+  name: 主轴换刀过程
+  phenomena:
+  - 主轴换刀过程
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 将其按说明书重新设定为’"23后，机械手动作恢复正常
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「主轴换刀过程」的具体表现（主轴换刀过程中在防护门未打开的情况下机械）？
+- node_id: D229
+  name: 不到位
+  phenomena:
+  - 不到位
+  - 掉刀
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 将其按说明书重新设定为’"23后，机械手动作恢复正常
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「不到位」的具体表现（该机床在使用中曾一度出现机械手回转动作迟）？
+- node_id: D230
+  name: 机械手不换刀
+  phenomena:
+  - 机械手不换刀
+  - 换刀不换刀
+  - 不换刀
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 将其按说明书重新设定为’"23后，机械手动作恢复正常
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「机械手不换刀」的具体表现（机械手自动换刀时不换刀故障检查与分析’"）？
+- node_id: D231
+  name: 主轴定向后无
+  phenomena:
+  - 主轴定向后无
+  causes:
+  - desc: 调整$12*"3行程开关相关部件异常
+    probability: 高
+  solutions:
+  - step: 调整12"3行程开关档块，使之刚好将该行程开关压好
+    need_skill: false
+  - step: 此时，指示灯亮，机械手恢复正常工作，故障排除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「主轴定向后无」的具体表现（主轴定向后9无定向指示机械手无换刀动作故）？
+- node_id: D232
+  name: 出现了一次非
+  phenomena:
+  - 出现了一次非
+  causes:
+  - desc: 更换上北京精密相关部件异常
+    probability: 高
+  solutions:
+  - step: 拆卸机械手液压缸，解体检查，发现活塞支承环形圈均有直线性磨损，其状态能通压力油液
+    need_skill: true
+  - step: 液压缸内壁粗糙
+    need_skill: false
+  - step: 环状刀纹明显，粗糙度太差
+    need_skill: false
+  - step: 更换上北京精密机床厂生产的缸筒，支装调整试车正常运行直到现在已!年未再发生机械手换刀失灵故障
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「出现了一次非」的具体表现（出现了一次非常严重的换刀臂撞击主轴事故使）？
+- node_id: D233
+  name: 机械手不到位
+  phenomena:
+  - 机械手不到位
+  - 不到位
+  - 不动作
+  causes:
+  - desc: 更换上北京精密相关部件异常
+    probability: 高
+  solutions:
+  - step: 拆卸机械手液压缸，解体检查，发现活塞支承环形圈均有直线性磨损，其状态能通压力油液
+    need_skill: true
+  - step: 液压缸内壁粗糙
+    need_skill: false
+  - step: 环状刀纹明显，粗糙度太差
+    need_skill: false
+  - step: 更换上北京精密机床厂生产的缸筒，支装调整试车正常运行直到现在已!年未再发生机械手换刀失灵故障
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「机械手不到位」的具体表现（手臂旋转速度快慢不均气液转换器失油频率加）？
+- node_id: D234
+  name: 系统报警
+  phenomena:
+  - 系统报警
+  - 报警
+  causes:
+  - desc: 手控电磁阀能使换刀系统回位从而先否定了液压或机械上阻滞造成换刀系统不到位的可能性
+    probability: 高
+  - desc: 为此我们怀疑换刀动作与程序换刀指令不协调是造成故障的原因
+    probability: 中
+  solutions:
+  - step: 我们先用旋具顶相应的"电磁阀芯把机械臂缩回至“臂缩回”位置，使机床恢复正常，接着进一步分析产生故障的原因
+    need_skill: true
+  - step: 考虑到机床在此之前换刀正常，手控电磁阀能使换刀系统回位从而先否定了液压或机械上阻滞造成换刀系统不到位的可能性
+    need_skill: true
+  - step: 为此我们怀疑换刀动作与程序换刀指令不协调是造成故障的原因
+    need_skill: true
+  - step: 《操作员手册》中要求“连续运行中，两次换刀间隔时间不得小于!”经计时发现引发故障的程序段两次换刀时间间隔仅为"
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「系统报警」的具体表现（机床在执行工作头立卧转换时刀库门已打开但）？
+- node_id: D235
+  name: 报警
+  phenomena:
+  - 报警
+  - 不动作
+  causes:
+  - desc: 手控电磁阀能使换刀系统回位从而先否定了液压或机械上阻滞造成换刀系统不到位的可能性
+    probability: 高
+  - desc: 为此我们怀疑换刀动作与程序换刀指令不协调是造成故障的原因
+    probability: 中
+  solutions:
+  - step: 我们先用旋具顶相应的"电磁阀芯把机械臂缩回至“臂缩回”位置，使机床恢复正常，接着进一步分析产生故障的原因
+    need_skill: true
+  - step: 考虑到机床在此之前换刀正常，手控电磁阀能使换刀系统回位从而先否定了液压或机械上阻滞造成换刀系统不到位的可能性
+    need_skill: true
+  - step: 为此我们怀疑换刀动作与程序换刀指令不协调是造成故障的原因
+    need_skill: true
+  - step: 《操作员手册》中要求“连续运行中，两次换刀间隔时间不得小于!”经计时发现引发故障的程序段两次换刀时间间隔仅为"
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（换刀系统在执行某步换刀指令时不动作12显）？
+- node_id: D236
+  name: 换刀报警
+  phenomena:
+  - 换刀报警
+  - 报警
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 拆开刀库门控制盒后发现盒内连接刀库门的插杆滑动块错位，致使刀库门打开时，盒内联锁开关状态不变化，输出信号"598始终不变
+    need_skill: true
+  - step: 将插杆滑块位置复原后，打开刀库门时，"598为!，输出"895也为!，则气阀动作，手动换刀正常
+    need_skill: true
+  - step: ·13!·
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「换刀报警」的具体表现（自动换刀时发生故障报警显示号故障检查与分）？
+- node_id: D237
+  name: 不到位
+  phenomena:
+  - 不到位
+  - 报警
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 拆开刀库门控制盒后发现盒内连接刀库门的插杆滑动块错位，致使刀库门打开时，盒内联锁开关状态不变化，输出信号"598始终不变
+    need_skill: true
+  - step: 将插杆滑块位置复原后，打开刀库门时，"598为!，输出"895也为!，则气阀动作，手动换刀正常
+    need_skill: true
+  - step: ·13!·
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「不到位」的具体表现（有一次机床在加工叉车变速箱的过程中当机床）？
+- node_id: D238
+  name: 刀库抖动
+  phenomena:
+  - 刀库抖动
+  - 抖动
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 拆开刀库门控制盒后发现盒内连接刀库门的插杆滑动块错位，致使刀库门打开时，盒内联锁开关状态不变化，输出信号"598始终不变
+    need_skill: true
+  - step: 将插杆滑块位置复原后，打开刀库门时，"598为!，输出"895也为!，则气阀动作，手动换刀正常
+    need_skill: true
+  - step: ·13!·
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「刀库抖动」的具体表现（刀库运行时抖动故障检查与分析6783加工）？
+- node_id: D239
+  name: 一次设备在正
+  phenomena:
+  - 一次设备在正
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 拆开刀库门控制盒后发现盒内连接刀库门的插杆滑动块错位，致使刀库门打开时，盒内联锁开关状态不变化，输出信号"598始终不变
+    need_skill: true
+  - step: 将插杆滑块位置复原后，打开刀库门时，"598为!，输出"895也为!，则气阀动作，手动换刀正常
+    need_skill: true
+  - step: ·13!·
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「一次设备在正」的具体表现（一次设备在正常运转时操作工突然发现调出的）？
+- node_id: D240
+  name: 机床的机械手
+  phenomena:
+  - 机床的机械手
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 拆开刀库门控制盒后发现盒内连接刀库门的插杆滑动块错位，致使刀库门打开时，盒内联锁开关状态不变化，输出信号"598始终不变
+    need_skill: true
+  - step: 将插杆滑块位置复原后，打开刀库门时，"598为!，输出"895也为!，则气阀动作，手动换刀正常
+    need_skill: true
+  - step: ·13!·
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「机床的机械手」的具体表现（机床的机械手不能手动换刀故障检查与分析4）？
+- node_id: D241
+  name: 机械手进入刀
+  phenomena:
+  - 机械手进入刀
+  causes:
+  - desc: 由于用万用表测量电磁阀电压及阻值基本正常
+    probability: 高
+  - desc: 因此在排除了其他原因后
+    probability: 中
+  solutions:
+  - step: 根据以上分析，首先检查接近开关!"正常
+    need_skill: false
+  - step: 进一步查得液压马达有漏油现象，拆下更换密封圈，漏油排除，但仍不能校准，最后更换电磁阀!’后故障排除
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「机械手进入刀」的具体表现（机械手进入刀座后自动中断显示“读禁止”故）？
+- node_id: D242
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 由于用万用表测量电磁阀电压及阻值基本正常
+    probability: 高
+  - desc: 因此在排除了其他原因后
+    probability: 中
+  solutions:
+  - step: 根据以上分析，首先检查接近开关!"正常
+    need_skill: false
+  - step: 进一步查得液压马达有漏油现象，拆下更换密封圈，漏油排除，但仍不能校准，最后更换电磁阀!’后故障排除
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（开机待自检通过后启动液压执行轴校准其后在）？
+- node_id: D243
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 由于工件较复杂
+    probability: 高
+  - desc: 以至造成刀库的链带局部拉的太紧
+    probability: 中
+  solutions:
+  - step: 事实上的确如此
+    need_skill: false
+  - step: 最后我们把刀库链带的可调部分稍松了一些，结果一切都恢复正常，说明问题的确是出在机械上
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（机械手给主轴装入刀后逆时针56不执行死机）？
+- node_id: D244
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 由于工件较复杂
+    probability: 高
+  - desc: 以至造成刀库的链带局部拉的太紧
+    probability: 中
+  solutions:
+  - step: 事实上的确如此
+    need_skill: false
+  - step: 最后我们把刀库链带的可调部分稍松了一些，结果一切都恢复正常，说明问题的确是出在机械上
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（机床在AB状态下加工工件时送刀盒将刀具送）？
+- node_id: D245
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 由于工件较复杂
+    probability: 高
+  - desc: 以至造成刀库的链带局部拉的太紧
+    probability: 中
+  solutions:
+  - step: 事实上的确如此
+    need_skill: false
+  - step: 最后我们把刀库链带的可调部分稍松了一些，结果一切都恢复正常，说明问题的确是出在机械上
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（机床在-状态下加件时机械手将刀具从主刀库）？
+- node_id: D246
+  name: 报警
+  phenomena:
+  - 报警
+  - 停止
+  causes:
+  - desc: 由于工件较复杂
+    probability: 高
+  - desc: 以至造成刀库的链带局部拉的太紧
+    probability: 中
+  solutions:
+  - step: 事实上的确如此
+    need_skill: false
+  - step: 最后我们把刀库链带的可调部分稍松了一些，结果一切都恢复正常，说明问题的确是出在机械上
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（当进行到自动换刀程序时刀库开始运转但是所）？
+- node_id: D247
+  name: 刀库报警
+  phenomena:
+  - 刀库报警
+  - 系统报警
+  - 报警
+  causes:
+  - desc: 调整到正常位置则故障排除相关部件异常
+    probability: 高
+  solutions:
+  - step: 将9!，9!"调整到正常位置则故障排除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「刀库报警」的具体表现（机床在运行过程中突然出现刀库伺服系统有故）？
+- node_id: D248
+  name: 开机后刀库回
+  phenomena:
+  - 开机后刀库回
+  causes:
+  - desc: 调整到正常位置则故障排除相关部件异常
+    probability: 高
+  solutions:
+  - step: 将9!，9!"调整到正常位置则故障排除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「开机后刀库回」的具体表现（""’开机后刀库回零无动作故障检查与分析）？
+- node_id: D249
+  name: 刀库不到位
+  phenomena:
+  - 刀库不到位
+  - 不到位
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 卸下刀库回零开关，人为地控制它的回零，使机械、电气零点相符
+    need_skill: true
+  - step: 故障消除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「刀库不到位」的具体表现（""’加工中心正常运行过程中出现刀库旋转）？
+- node_id: D250
+  name: 换刀不到位
+  phenomena:
+  - 换刀不到位
+  - 不能运行
+  - 不到位
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 根据上述分析，我们首先检查电机和相关线路，正常
+    need_skill: false
+  - step: 其次，检查了伺服单元，并将该伺服单元用在!轴上，结果正常，说明伺服单元调节失灵不可能
+    need_skill: true
+  - step: 再次，对晶闸管进行检查，结果正常
+    need_skill: false
+  - step: 所以，故障范围应出现在反馈环节上
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「换刀不到位」的具体表现（当换刀机某一信号不到位而发生故障至使整机）？
+- node_id: D251
+  name: 输入指令要工
+  phenomena:
+  - 输入指令要工
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 根据上述分析，我们首先检查电机和相关线路，正常
+    need_skill: false
+  - step: 其次，检查了伺服单元，并将该伺服单元用在!轴上，结果正常，说明伺服单元调节失灵不可能
+    need_skill: true
+  - step: 再次，对晶闸管进行检查，结果正常
+    need_skill: false
+  - step: 所以，故障范围应出现在反馈环节上
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「输入指令要工」的具体表现（输入指令要工作台转或回零时工作台只能转约）？
+- node_id: D252
+  name: 工作台不准
+  phenomena:
+  - 工作台不准
+  - 报警
+  - 不准
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 根据上述分析，我们首先检查电机和相关线路，正常
+    need_skill: false
+  - step: 其次，检查了伺服单元，并将该伺服单元用在!轴上，结果正常，说明伺服单元调节失灵不可能
+    need_skill: true
+  - step: 再次，对晶闸管进行检查，结果正常
+    need_skill: false
+  - step: 所以，故障范围应出现在反馈环节上
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「工作台不准」的具体表现（工作台（旋转）位置不准无法落下伺服出现0）？
+- node_id: D253
+  name: 输入指令转台
+  phenomena:
+  - 输入指令转台
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 根据上述分析，我们首先检查电机和相关线路，正常
+    need_skill: false
+  - step: 其次，检查了伺服单元，并将该伺服单元用在!轴上，结果正常，说明伺服单元调节失灵不可能
+    need_skill: true
+  - step: 再次，对晶闸管进行检查，结果正常
+    need_skill: false
+  - step: 所以，故障范围应出现在反馈环节上
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「输入指令转台」的具体表现（输入6-指令转台抬起后无动作故障检查与分）？
+- node_id: D254
+  name: 烧坏
+  phenomena:
+  - 烧坏
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 根据上述分析，我们首先检查电机和相关线路，正常
+    need_skill: false
+  - step: 其次，检查了伺服单元，并将该伺服单元用在!轴上，结果正常，说明伺服单元调节失灵不可能
+    need_skill: true
+  - step: 再次，对晶闸管进行检查，结果正常
+    need_skill: false
+  - step: 所以，故障范围应出现在反馈环节上
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「烧坏」的具体表现（有一台2"-卧式加工中心工作台旋转和刀库）？
+- node_id: D255
+  name: 在开机接通电
+  phenomena:
+  - 在开机接通电
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 先拆开旋转工作台，再拆下旋转编码器检查，发现其密封有问题，光栅玻璃面上受油、气、水等污染，导致其无法
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「在开机接通电」的具体表现（在开机接通12电源后系统要进行步自诊断只）？
+- node_id: D256
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 调出轴的伺服跟随误差参数，适当加大一些之后，故障消失
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（在指令9轴回转分度时无论是用手摇脉冲发生）？
+- node_id: D257
+  name: 振动
+  phenomena:
+  - 振动
+  causes:
+  - desc: 更换此屯缆后故障排除。相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换此屯缆后故障排除
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「振动」的具体表现（转台快速时有振动故障检查与分析"卧式加工）？
+- node_id: D258
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 更换此屯缆后故障排除。相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换此屯缆后故障排除
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（开机后报警第四轴过载故障检查与分析亚威8）？
+- node_id: D259
+  name: 该机床在装夹
+  phenomena:
+  - 该机床在装夹
+  causes:
+  - desc: 由于使用环境较差
+    probability: 高
+  - desc: 由于考虑到维修时所用导线与生产厂家使用导线直径不同
+    probability: 中
+  solutions:
+  - step: 圆感应同步器是安装在机床上的感应部件，由于使用环境较差，感应同步器要防水、防油，所有线头联接部分都固
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「该机床在装夹」的具体表现（该机床在装夹工件时不能进行手动托盘转动故）？
+- node_id: D260
+  name: 系统报警
+  phenomena:
+  - 系统报警
+  - 报警
+  causes:
+  - desc: 由于使用环境较差
+    probability: 高
+  - desc: 由于考虑到维修时所用导线与生产厂家使用导线直径不同
+    probability: 中
+  solutions:
+  - step: 圆感应同步器是安装在机床上的感应部件，由于使用环境较差，感应同步器要防水、防油，所有线头联接部分都固
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「系统报警」的具体表现（打开主电源后液压及辅助功能正常工作启动控）？
+- node_id: D261
+  name: 工作台超差
+  phenomena:
+  - 工作台超差
+  - 系统掉电
+  - 超差
+  - 报警
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 将该处强行复位，故障排除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「工作台超差」的具体表现（一次加工主轴箱体过程中"轴（工作台）回转）？
+- node_id: D262
+  name: 工作台报警
+  phenomena:
+  - 工作台报警
+  - 报警
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 将该处强行复位，故障排除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「工作台报警」的具体表现（工作台分度盘不回落021号报警故障检查及）？
+- node_id: D263
+  name: 工作台不能移动
+  phenomena:
+  - 工作台不能移动
+  - 不能移动
+  - 报警
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 将!"行程开关修理后，故障排除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「工作台不能移动」的具体表现（工作台不能移动09号报警故障检查与分析该）？
+- node_id: D264
+  name: 工作台报警
+  phenomena:
+  - 工作台报警
+  - 报警
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 将液压泵检修后，保证正常的工作压力，故障消除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「工作台报警」的具体表现（’加工中心开机后工作台回零不旋转且出现号）？
+- node_id: D265
+  name: 工作台报警
+  phenomena:
+  - 工作台报警
+  - 报警
+  causes:
+  - desc: 更换碟簧。更换之后，工作相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换碟簧
+    need_skill: true
+  - step: 更换之后，工作台仍不旋转
+    need_skill: true
+  - step: 仍利用梯形图和状态信息检查，8-96-5信息由“”变为了“”8-!5-5由“”变为了“”
+    need_skill: true
+  - step: 即简易定位装置在位信号灯不亮，未在位，且报警
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「工作台报警」的具体表现（机床开机后工作台回零不旋转且出现号号报警）？
+- node_id: D266
+  name: 主轴伺服单元
+  phenomena:
+  - 主轴伺服单元
+  causes:
+  - desc: 由于有其余线连着有时还接触
+    probability: 高
+  solutions:
+  - step: 根据报警内容分析伺服与电动机信号控制断线，接触不良的可能性非常大，拆开1’接线头，轻轻拉一下接线头，
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「主轴伺服单元」的具体表现（0主轴伺服单元印制电路板上屡烧-保险故障）？
+- node_id: D267
+  name: 主轴报警
+  phenomena:
+  - 主轴报警
+  - 报警
+  causes:
+  - desc: 由于有其余线连着有时还接触
+    probability: 高
+  solutions:
+  - step: 根据报警内容分析伺服与电动机信号控制断线，接触不良的可能性非常大，拆开1’接线头，轻轻拉一下接线头，
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「主轴报警」的具体表现（手动自动方式主轴均不起动且无报警显示正常）？
+- node_id: D268
+  name: 主轴报警
+  phenomena:
+  - 主轴报警
+  - 换刀报警
+  - 报警
+  causes:
+  - desc: 由于有其余线连着有时还接触
+    probability: 高
+  solutions:
+  - step: 根据报警内容分析伺服与电动机信号控制断线，接触不良的可能性非常大，拆开1’接线头，轻轻拉一下接线头，
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「主轴报警」的具体表现（当执行8换刀时主轴定向过程中发生报警控制）？
+- node_id: D269
+  name: 主轴报警
+  phenomena:
+  - 主轴报警
+  - 报警
+  - 停止
+  causes:
+  - desc: 更换)*%5后，一%5$相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换5后，一5输出电压正常，主轴—报警消除
+    need_skill: true
+  - step: 同时，主轴—号报警也消除，机床恢复正常
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「主轴报警」的具体表现（运行中突然停止所有功能不执行主轴伺服过流）？
+- node_id: D270
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 更换)*%5后，一%5$相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换5后，一5输出电压正常，主轴—报警消除
+    need_skill: true
+  - step: 同时，主轴—号报警也消除，机床恢复正常
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（由于操作者失误在主轴旋转过程中使其撞到工）？
+- node_id: D271
+  name: 主轴去进行换
+  phenomena:
+  - 主轴去进行换
+  causes:
+  - desc: 更换)*%5后，一%5$相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换5后，一5输出电压正常，主轴—报警消除
+    need_skill: true
+  - step: 同时，主轴—号报警也消除，机床恢复正常
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「主轴去进行换」的具体表现（主轴去进行换刀时有撞击刀夹现象有时会把刀）？
+- node_id: D272
+  name: 主轴报警
+  phenomena:
+  - 主轴报警
+  - 报警
+  causes:
+  - desc: 更换)*%5后，一%5$相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换5后，一5输出电压正常，主轴—报警消除
+    need_skill: true
+  - step: 同时，主轴—号报警也消除，机床恢复正常
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「主轴报警」的具体表现（主轴"号报警故障检查与分析查—’加工中心）？
+- node_id: D273
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 从电气控制柜中将主轴电动机电缆拉出一部分，使其达到!轴向下移动时的最大距离
+    need_skill: true
+  - step: 同时，将松动、脱落的连线焊好，故障排除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（66号46号报警故障检查与分析该机为北京）？
+- node_id: D274
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 更换一新熔断器，且将熔断相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换一新熔断器，且将熔断片接线螺钉拧紧后，故障排除
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（主轴不能定向负载表指针达红区号报警故障检）？
+- node_id: D275
+  name: 抖动
+  phenomena:
+  - 抖动
+  - 报警
+  causes:
+  - desc: 更换一新熔断器，且将熔断相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换一新熔断器，且将熔断片接线螺钉拧紧后，故障排除
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「抖动」的具体表现（机床出现剧烈抖动声"号报警故障检查与分析）？
+- node_id: D276
+  name: 主轴低速指令
+  phenomena:
+  - 主轴低速指令
+  causes:
+  - desc: 以免造成进一步的损坏
+    probability: 高
+  solutions:
+  - step: 更换大功率模块!、!，电容"、""，电阻"，熔断器’及驱动板"后，调速器恢复正常
+    need_skill: true
+  - step: 为保险起见，把起动和制动时间（参数"-、"）均改为，以减少对大功率器件的冲击电流，降低这一指标后对机床的性能并无影响
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「主轴低速指令」的具体表现（主轴低速指令不起作用故障检查与分析4"7）？
+- node_id: D277
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 以免造成进一步的损坏
+    probability: 高
+  solutions:
+  - step: 更换大功率模块!、!，电容"、""，电阻"，熔断器’及驱动板"后，调速器恢复正常
+    need_skill: true
+  - step: 为保险起见，把起动和制动时间（参数"-、"）均改为，以减少对大功率器件的冲击电流，降低这一指标后对机床的性能并无影响
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（该变频调速系统安装在023卧式加工中心作）？
+- node_id: D278
+  name: 停止
+  phenomena:
+  - 停止
+  causes:
+  - desc: 因机床启动后主轴油就必须一直有
+    probability: 高
+  solutions:
+  - step: 这说明故障出在冷却器控制电路本身
+    need_skill: false
+  - step: 将，1!-78!开关短接后机床恢复正常，故障排除
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「停止」的具体表现（机床自动工作时突然停止故障检查与分析12）？
+- node_id: D279
+  name: 主轴报警
+  phenomena:
+  - 主轴报警
+  - 冷却报警
+  - 报警
+  causes:
+  - desc: 因机床启动后主轴油就必须一直有
+    probability: 高
+  solutions:
+  - step: 这说明故障出在冷却器控制电路本身
+    need_skill: false
+  - step: 将，1!-78!开关短接后机床恢复正常，故障排除
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「主轴报警」的具体表现（开机后出现报警6-236AA3B6’6B）？
+- node_id: D280
+  name: 不转
+  phenomena:
+  - 不转
+  causes:
+  - desc: 落下的铁屑使液压缸及活塞组件卡死导致动作失灵
+    probability: 高
+  solutions:
+  - step: 仔细将主轴挂档机构拆下，发现固定缸的活塞杆的定位销断裂，落下的铁屑使液压缸及活塞组件卡死导致动作失灵
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「不转」的具体表现（当键入主轴高速--"（以上）指令时机床作）？
+- node_id: D281
+  name: 当机床自动换
+  phenomena:
+  - 当机床自动换
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 拆卸!轴光栅尺检查、发现密封唇老化破损后有少量断片在尺框内
+    need_skill: true
+  - step: 该光栅尺是德国""’生产的型、结构精致、紧凑
+    need_skill: false
+  - step: 细心将光栅尺头拆开，取出安装座与读数头，清理光栅框内密封唇断片及油污，用白绸、无水乙醇擦洗聚光镜、内框及光栅
+    need_skill: true
+  - step: 重新装卡参考标记
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「当机床自动换」的具体表现（当机床自动换刀时机床主轴定位键不处于换刀）？
+- node_id: D282
+  name: 报警
+  phenomena:
+  - 报警
+  - 停止
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 拆卸!轴光栅尺检查、发现密封唇老化破损后有少量断片在尺框内
+    need_skill: true
+  - step: 该光栅尺是德国""’生产的型、结构精致、紧凑
+    need_skill: false
+  - step: 细心将光栅尺头拆开，取出安装座与读数头，清理光栅框内密封唇断片及油污，用白绸、无水乙醇擦洗聚光镜、内框及光栅
+    need_skill: true
+  - step: 重新装卡参考标记
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（机床正常加工中在指令结束后轴超过基准点快）？
+- node_id: D283
+  name: 在正常加工过
+  phenomena:
+  - 在正常加工过
+  causes:
+  - desc: 更换液压缸、进油管7相关部件异常
+    probability: 高
+  solutions:
+  - step: 拆下刀盘、拆下镗头尾部气液增压转换器，拆卸补偿型中间刀盘连补偿液压缸及管路一并取出
+    need_skill: true
+  - step: 检查油缸管路，高速旋转性密封接头
+    need_skill: false
+  - step: 更换液压缸、进油管7形圈，增压气液转换器出口密封，装配还原试车
+    need_skill: true
+  - step: 内孔全部加工偏大超差，外圆偏小超差，说明刀具补偿系统恢复功能，在控制器上减去刀补一定数值
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「在正常加工过」的具体表现（在正常加工过程中检查一次装卡加工下来的首）？
+- node_id: D284
+  name: 系统报警
+  phenomena:
+  - 系统报警
+  - 报警
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 对于油压夹紧系统，已无法再加快它的动作速度，于是采取加速电动机抱闸的速度
+    need_skill: true
+  - step: 具体采取两种措施：!在电路中增加一小型继电器—-：（如图"—所示），当!轴停止时，0点12输出为零—-
+    need_skill: true
+  - step: 立即断电，其触点瞬时断开—-3加快电的抱闸速度
+    need_skill: false
+  - step: 由图可以看出—-
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「系统报警」的具体表现（该机床多次出现报警内容为“’轴控制环硬件）？
+- node_id: D285
+  name: 超差
+  phenomena:
+  - 超差
+  - 报警
+  - 停止
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 对于油压夹紧系统，已无法再加快它的动作速度，于是采取加速电动机抱闸的速度
+    need_skill: true
+  - step: 具体采取两种措施：!在电路中增加一小型继电器—-：（如图"—所示），当!轴停止时，0点12输出为零—-
+    need_skill: true
+  - step: 立即断电，其触点瞬时断开—-3加快电的抱闸速度
+    need_skill: false
+  - step: 由图可以看出—-
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「超差」的具体表现（机床在使用一段时间后再次利用大角度铣头时）？
+- node_id: D286
+  name: 当运行轴负向
+  phenomena:
+  - 当运行轴负向
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 该故障如果不及时处理将会使
+    need_skill: false
+  - step: '!击穿、电源短路，易烧坏其它元器件，造成不必要的损失'
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「当运行轴负向」的具体表现（当运行轴负向时产生脉动时常熔断熔丝故障检）？
+- node_id: D287
+  name: 不能起动
+  phenomena:
+  - 不能起动
+  causes:
+  - desc: 调整床身导轨精度，使其相关部件异常
+    probability: 高
+  solutions:
+  - step: ’转子铣正加工关键产品，不可能解体大修
+    need_skill: false
+  - step: 我们针对这种情况，创造性地采取措施：对于床身导轨，把立柱等开到第一段导轨上，调整床身导轨精度，使其达到出厂精度
+    need_skill: true
+  - step: 对于空气静压系统，更换带病运行的空气压缩机，并且清理管路，从而提高压缩空气的供气压力
+    need_skill: true
+  - step: 同时，通过向压缩空气中加洗油的方法，清洗压力腔，提高有效面积
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「不能起动」的具体表现（出现故障号""6机床不能起动故障检查与分）？
+- node_id: D288
+  name: 烧坏
+  phenomena:
+  - 烧坏
+  causes:
+  - desc: 调整床身导轨精度，使其相关部件异常
+    probability: 高
+  solutions:
+  - step: ’转子铣正加工关键产品，不可能解体大修
+    need_skill: false
+  - step: 我们针对这种情况，创造性地采取措施：对于床身导轨，把立柱等开到第一段导轨上，调整床身导轨精度，使其达到出厂精度
+    need_skill: true
+  - step: 对于空气静压系统，更换带病运行的空气压缩机，并且清理管路，从而提高压缩空气的供气压力
+    need_skill: true
+  - step: 同时，通过向压缩空气中加洗油的方法，清洗压力腔，提高有效面积
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「烧坏」的具体表现（转子铣出现’轴伺服电动机电流过大造成伺服）？
+- node_id: D289
+  name: 该机床在加工
+  phenomena:
+  - 该机床在加工
+  causes:
+  - desc: 因数与开环增益有关
+    probability: 高
+  solutions:
+  - step: 根据以上推导，按品质因素定义，要提高精度，增强目标跟踪能力就要减小稳态误差，提高品质因数
+    need_skill: true
+  - step: 从上式看，加速度品质因数与开环增益有关
+    need_skill: false
+  - step: 找到参数56：!6"7!试将56从原08减小即增大!值，从而增大品质因数!，提高定位精度
+    need_skill: true
+  - step: 实际调整是有效的，通过调整结构参数，提高了定位精度，符合了加工精度要求
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「该机床在加工」的具体表现（该机床在加工中精度变低定位误差大故障检查）？
+- node_id: D290
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 由于元件二极管老化
+    probability: 高
+  - desc: 性能发生变化所致
+    probability: 中
+  - desc: 故障是由于元件二极管老化
+    probability: 低
+  solutions:
+  - step: 通过以上分析，’产生故障是由于元件二极管老化，性能发生变化所致
+    need_skill: true
+  - step: 用一与性能相近的国产二极管代换后，故障彻底排除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（运行几年后机床的轴在回参考点等高速进给行）？
+- node_id: D291
+  name: 主轴报警
+  phenomena:
+  - 主轴报警
+  - 系统报警
+  - 报警
+  causes:
+  - desc: 由于元件二极管老化
+    probability: 高
+  - desc: 性能发生变化所致
+    probability: 中
+  - desc: 故障是由于元件二极管老化
+    probability: 低
+  solutions:
+  - step: 通过以上分析，’产生故障是由于元件二极管老化，性能发生变化所致
+    need_skill: true
+  - step: 用一与性能相近的国产二极管代换后，故障彻底排除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「主轴报警」的具体表现（机床主轴2’驱动系统出现故障报警显示代码）？
+- node_id: D292
+  name: 停止
+  phenomena:
+  - 停止
+  causes:
+  - desc: 更换两只相同型号的晶闸管相关部件异常
+    probability: 高
+  solutions:
+  - step: '!一次更换两只相同型号的晶闸管'
+    need_skill: true
+  - step: '"在直流伺服单元的晶闸管上安装-只压敏电阻'
+    need_skill: false
+  - step: 在晶闸管的两端加上压敏电阻后，运行’年一直没有出现故障（包括多次停电）
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「停止」的具体表现（主轴正向运转制动均正常反向运转正常但停止）？
+- node_id: D293
+  name: 不稳定
+  phenomena:
+  - 不稳定
+  causes:
+  - desc: 更换两只相同型号的晶闸管相关部件异常
+    probability: 高
+  solutions:
+  - step: '!一次更换两只相同型号的晶闸管'
+    need_skill: true
+  - step: '"在直流伺服单元的晶闸管上安装-只压敏电阻'
+    need_skill: false
+  - step: 在晶闸管的两端加上压敏电阻后，运行’年一直没有出现故障（包括多次停电）
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「不稳定」的具体表现（机床主轴在几年的运行中一直较稳定但在一次）？
+- node_id: D294
+  name: 机床主轴不动
+  phenomena:
+  - 机床主轴不动
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 将机床’数据清零后，重新输入无参数，故障排除，机床恢复正常
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「机床主轴不动」的具体表现（机床主轴不动2故障显示3435故障检查与）？
+- node_id: D295
+  name: 报警
+  phenomena:
+  - 报警
+  - 超程
+  causes:
+  - desc: 更换一新的行程开关，重新相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换一新的行程开关，重新调整好挡铁与行程开关的压合距离，至此故障再未发生
+    need_skill: true
+  - step: 第三节其它部分故障实例与诊断
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（轴超程报警故障检查与分析机床与数控系统同）？
+- node_id: D296
+  name: 横梁快速下降
+  phenomena:
+  - 横梁快速下降
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: '"按96封锁调平报警，解除急停，使各伺服上电，将刀架移动横梁中央，使两边丝杆受力平衡'
+    need_skill: true
+  - step: 在报警边的数显装置同方向以内的数，将67置成’’
+    need_skill: false
+  - step: 此·!’·时调平系统报警!"解除，调平功能恢复，伺服电动机带动楔形块使横梁下降，机械没有卡死，正常，数显表显示相对位置为
+    need_skill: true
+  - step: 按校对功能，此时又显示绝对位置’，在没有报警状态下，绝对误差!
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「横梁快速下降」的具体表现（横梁快速下降时’没准备好调乎指示灯灭故障）？
+- node_id: D297
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 由于控制阀是组合阀
+    probability: 高
+  solutions:
+  - step: 由于控制阀是组合阀，而且连同球阀等一起安装在油气分离器壁体上，进出气口并不都是管路连接，没有原样阀体根本无法替换
+    need_skill: true
+  - step: 在修理过程中只好将原回路作微小改动
+    need_skill: false
+  - step: 第一步，将控制阀的阀芯取出使其处于常通状态，并将排气小孔堵死
+    need_skill: true
+  - step: 第二步，借助局部调节阀引出管路在其上接一排气阀（如图—）
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（机床开机时出现空气静压压力不足故障报警而）？
+- node_id: D298
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 反复调节压力阀将水压减小，进行试验
+    need_skill: false
+  - step: 试验的结果，证实了我们的推测，使这例故障得以排除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（流量控制阀缺水报警图排气组合阀更改图故障）？
+- node_id: D299
+  name: 电动机振动
+  phenomena:
+  - 电动机振动
+  - 振动
+  causes:
+  - desc: 更换功放管，机床手动时，相关部件异常
+    probability: 高
+  solutions:
+  - step: 下一步检查高频取样电路，用示波器检查高频电源内插头’的!"脚对地，有脉冲信号
+    need_skill: true
+  - step: 说明：通过故障分析，从检查到排除可看出，故障原因
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「电动机振动」的具体表现（机床无自动手动轴运行正常手动轴电动机振动）？
+- node_id: D300
+  name: 抖动
+  phenomena:
+  - 抖动
+  - 噪声
+  causes:
+  - desc: 由于某种原因发生过载或过流
+    probability: 高
+  - desc: ·"·图!"步进驱动电路原理图是其系统为开环控制所致
+    probability: 中
+  solutions:
+  - step: 更换一只新管后，故障排除
+    need_skill: true
+  - step: 当机床在加工的过程中，由于某种原因发生过载或过流，其开环系统无法检测到这种过载或过流信号，从而，控制步进驱动电路停止工作
+    need_skill: true
+  - step: 而是按步就班的继续执行其控制指令，驱使大功率晶体管在过载或过流状态下工作，因此，必须会烧毁晶体管
+    need_skill: true
+  - step: 这也是经济型数控系统的一个致命的弊病
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「抖动」的具体表现（轴工作抖动同时伴有机械噪声故障检查与分析）？
+- node_id: D301
+  name: 失步
+  phenomena:
+  - 失步
+  - 停止
+  causes:
+  - desc: 由于机床的振动
+    probability: 高
+  solutions:
+  - step: 将该连接插件重新紧固后，故障排除
+    need_skill: false
+  - step: 说明：数控系统在加工的过程中，由于机床的振动，其连接插件、连接部位是故障的多发点
+    need_skill: true
+  - step: 在机床的日常维护保养中，重视这些部位，就可减少故障的发生，从而，提高机床的利用率
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「失步」的具体表现（轴在加工过程中时常发生失步有时甚至停止进）？
+- node_id: D302
+  name: 失步
+  phenomena:
+  - 失步
+  causes:
+  - desc: 由于元器件性能变质所引起的故障现象
+    probability: 高
+  - desc: 说明：这种由于元器件性能变质所引起的故障现象
+    probability: 中
+  solutions:
+  - step: 更换一只新开关管0"后，检查!、"、三相输出达到平衡，故障除
+    need_skill: true
+  - step: 说明：这种由于元器件性能变质所引起的故障现象，在分立元件的电子电路中是常有发生的
+    need_skill: true
+  - step: 对于这种“软故障”的处理，必须要求维修人员熟悉其系统的工作原理以及电气原理
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「失步」的具体表现（1轴在快速加工中失步故障检查与分析该机床）？
+- node_id: D303
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 紧固好电缆线卡子，设备恢相关部件异常
+    probability: 高
+  solutions:
+  - step: 重新连好电缆线，紧固好电缆线卡子，设备恢复正常运行
+    need_skill: false
+  - step: 这时维修人员尽可放心的采集诊断所需的各种数据
+    need_skill: false
+  - step: 手摇脉冲发生器在其它一些维修活动中也是很有用的
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（给轴指令时报警3号12显示如下“—456）？
+- node_id: D304
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 我们购买了一块国产的6!—!变换器，采用板外连线的方法替换了原来损坏的变换器之后，机床恢复正常
+    need_skill: true
+  - step: 说明：正确使用数字存储示波器，捕捉与故障相关的一些信号，对诊断这类随机性故障，有着极大的帮助
+    need_skill: true
+  - step: 第三节脉冲电源系统故障实例与诊断
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（轴时常发生高速运转无报警信号自起动达轴高）？
+- node_id: D305
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 通电用铁块检查接近开关，接触器动作正常，开动丝筒电动机观察发现在换向时电动机已减速，但丝筒仍向前滑行
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（切割时发出“叭叭”的放电异常声有短路烧丝）？
+- node_id: D306
+  name: 高频脉冲电源
+  phenomena:
+  - 高频脉冲电源
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 通电用铁块检查接近开关，接触器动作正常，开动丝筒电动机观察发现在换向时电动机已减速，但丝筒仍向前滑行
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「高频脉冲电源」的具体表现（高频脉冲电源工作不正常在加工走丝过程中切）？
+- node_id: D307
+  name: 运丝电动机运
+  phenomena:
+  - 运丝电动机运
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 通电用铁块检查接近开关，接触器动作正常，开动丝筒电动机观察发现在换向时电动机已减速，但丝筒仍向前滑行
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「运丝电动机运」的具体表现（运丝电动机运行不正常故障检查与分析该机床）？
+- node_id: D308
+  name: 系统报警
+  phenomena:
+  - 系统报警
+  - 报警
+  - 停止
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 通电用铁块检查接近开关，接触器动作正常，开动丝筒电动机观察发现在换向时电动机已减速，但丝筒仍向前滑行
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「系统报警」的具体表现（按0轴坐标移动按钮坐标不动机床报警121）？
+- node_id: D309
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 通电用铁块检查接近开关，接触器动作正常，开动丝筒电动机观察发现在换向时电动机已减速，但丝筒仍向前滑行
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（按轴移动按钮又出现坐标轴不动机床报警号为）？
+- node_id: D310
+  name: 电动机停止
+  phenomena:
+  - 电动机停止
+  - 停止
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 通电用铁块检查接近开关，接触器动作正常，开动丝筒电动机观察发现在换向时电动机已减速，但丝筒仍向前滑行
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「电动机停止」的具体表现（丝筒电动机不反向撞终点开关而停止故障检查）？
+- node_id: D311
+  name: 乱字符
+  phenomena:
+  - 乱字符
+  - 不能输入
+  causes:
+  - desc: 因这台数控柜下面是功放电源
+    probability: 高
+  - desc: 由于压合不紧
+    probability: 中
+  solutions:
+  - step: 逐一按压所有插接式的集成电路块，并按压各功能板与总线的插接、坐标功放电源板与其插座的连接
+    need_skill: true
+  - step: 经此按压后试车，数控装置又能正常运行了
+    need_skill: false
+  - step: 故障排除
+    need_skill: false
+  - step: 说明：!这台设备每逢气温突变、骤冷、骤热都会出现这种故障
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「乱字符」的具体表现（开机就发现数控装置不能正常运行程序不能输）？
+- node_id: D312
+  name: 合上电源后按
+  phenomena:
+  - 合上电源后按
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 为了达到既保证机床能正常工作，又保护磨头主轴电动机的目的，将一新热敏电阻嵌入电机内，将其引线接至!"的、端，开机故障排除
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「合上电源后按」的具体表现（合上电源后按机床启动按钮主轴电动机不能启）？
+- node_id: D313
+  name: 磨头主轴自动
+  phenomena:
+  - 磨头主轴自动
+  causes:
+  - desc: 更换一只新熔断器后，故障相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换一只新熔断器后，故障排除
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「磨头主轴自动」的具体表现（磨头主轴自动时不能复位故障检查与分析’"）？
+- node_id: D314
+  name: 磨头主轴测速
+  phenomena:
+  - 磨头主轴测速
+  causes:
+  - desc: 更换该二极管，故障排除。相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换该二极管，故障排除
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「磨头主轴测速」的具体表现（磨头主轴测速电动机启动即烧保险故障检查与）？
+- node_id: D315
+  name: 主轴报警
+  phenomena:
+  - 主轴报警
+  - 报警
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 将其复位后，检查输出到励磁线圈的接线端上电压也正常
+    need_skill: false
+  - step: 将励磁线圈接上后，故障排除
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「主轴报警」的具体表现（磨头主轴电机不动计数器不计数报警故障现象）？
+- node_id: D316
+  name: 报警
+  phenomena:
+  - 报警
+  - 停止
+  causes:
+  - desc: 由于编码器联轴器有一斜裂纹
+    probability: 高
+  solutions:
+  - step: 更换了新的联轴器故障随之排除
+    need_skill: true
+  - step: 说明：由于编码器联轴器有一斜裂纹，当电动机正向旋转时，联轴节上的裂纹不受力，编码器不丢转，机床正常运行不出故障
+    need_skill: true
+  - step: 而电动机反向旋转时，裂纹受力张开，致使编码器丢转，导致了系统出现!!"号报警
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（这台数控磨床当轴正向运动时工作正常而反向）？
+- node_id: D317
+  name: 系统报警
+  phenomena:
+  - 系统报警
+  - 报警
+  causes:
+  - desc: 因编码器无备件可更换
+    probability: 高
+  - desc: 因是编码器密封不好
+    probability: 中
+  - desc: 由于编码器与机床的零点密切相关
+    probability: 低
+  solutions:
+  - step: 因编码器无备件可更换，定货周期又长，不能解燃眉之急
+    need_skill: true
+  - step: 说明：由于编码器与机床的零点密切相关，编码器动了之后，机床零点也相应变化
+    need_skill: true
+  - step: 因此，机床恢复正常之后，还必须重新调整零点
+    need_skill: false
+  - step: 如果机床零点调整不好，有时会出现其它问题或影响加工精度
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「系统报警」的具体表现（机床在回参考点时轴找不到参考点一直运动直）？
+- node_id: D318
+  name: 失控
+  phenomena:
+  - 失控
+  causes:
+  - desc: 因此为证实初步判断
+    probability: 高
+  - desc: 因为没有详细线路图
+    probability: 中
+  solutions:
+  - step: 通过分析后，对怀疑部位进行由浅人深的排除法诊断，通过比较编码器输出的
+    need_skill: true
+  - step: 36信号，故障前后无不同现象，故可初步排除此部位，进一步对逻辑控制板处理后的
+    need_skill: true
+  - step: 36进行对比检查发现其测量结果不一样
+    need_skill: false
+  - step: 因而，该板为初步怀疑对象，从出现故障的情况看，温升是一个很重要的影响因素
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「失控」的具体表现（机床一开机各部分功能均正常运转但是运行大）？
+- node_id: D319
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 更换+,-./0板后故障相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换-0板后故障排除
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（开机后正常运行两小时左右会出现停机报警报）？
+- node_id: D320
+  name: 超差
+  phenomena:
+  - 超差
+  causes:
+  - desc: 修复光滑；"用分析纯酒精相关部件异常
+    probability: 高
+  solutions:
+  - step: '!使用油石、金相砂纸，将受损的保护铝壳滑道修复光滑'
+    need_skill: false
+  - step: '"用分析纯酒精冲洗栅尺，将修复工作产生的铝屑全部冲出'
+    need_skill: true
+  - step: 特别注意，栅尺内有铝屑时，严禁使用任何东西擦光栅，一旦铝屑将光栅拉伤，整个尺子就报废了
+    need_skill: true
+  - step: 待干燥后，用鹿皮轻擦一遍栅尺表面
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「超差」的具体表现（加工出来的凸轮严重超差机床正常时加工出的）？
+- node_id: D321
+  name: 停止
+  phenomena:
+  - 停止
+  - 摆动
+  causes:
+  - desc: 将有可能造成其它部件损坏的部件或可能被损坏
+    probability: 高
+  solutions:
+  - step: 找到断线部位后，对断线进行焊接并采取防折措施，开机试验，故障消除，机床恢复正常
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「停止」的具体表现（这台机床在自动加工循环时当工件加工完毕4）？
+- node_id: D322
+  name: 振动
+  phenomena:
+  - 振动
+  causes:
+  - desc: 更换后，机床的故障被排除相关部件异常
+    probability: 高
+  solutions:
+  - step: 将测速电机的电刷更换后，机床的故障被排除，机床恢复了正常使用
+    need_skill: true
+  - step: 为了避免类似问题的再次发生，将压缩空气管路增加过滤干燥装置，清洁压缩空气，减少水分和其它杂质
+    need_skill: true
+  - step: 使问题得到了彻底的解决
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「振动」的具体表现（这台机床使用年以后3轴运动产生的振动越来）？
+- node_id: D323
+  name: 磨头主轴电动
+  phenomena:
+  - 磨头主轴电动
+  causes:
+  - desc: 修复后，故障排除。相关部件异常
+    probability: 高
+  solutions:
+  - step: 将该仪表修复后，故障排除
+    need_skill: false
+  - step: 一旦机床出现故障，这些状态信息就要发生变化
+    need_skill: false
+  - step: 通过这些变化，我们就能较为准确地定位故障，从而减少数控机床的·AC·故障停机时间，提高数控机床的利用率
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「磨头主轴电动」的具体表现（磨头主轴电动机不运转故障检查与分析该机床）？
+- node_id: D324
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 修复后，故障排除。相关部件异常
+    probability: 高
+  solutions:
+  - step: 将该仪表修复后，故障排除
+    need_skill: false
+  - step: 一旦机床出现故障，这些状态信息就要发生变化
+    need_skill: false
+  - step: 通过这些变化，我们就能较为准确地定位故障，从而减少数控机床的·AC·故障停机时间，提高数控机床的利用率
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（6号报警故障检查与分析该机床为意大利公司）？
+- node_id: D325
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 将9!开关修理后，0!状态为“9”，故障排除
+    need_skill: false
+  - step: 第二节其它数控加工设备的故障实例与诊断
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（号报警机床不能进入正常加工状态故障检查与）？
+- node_id: D326
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 将9!开关修理后，0!状态为“9”，故障排除
+    need_skill: false
+  - step: 第二节其它数控加工设备的故障实例与诊断
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（9号报警电机不能启动故障检查与分析机床与）？
+- node_id: D327
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 更换损坏元器件；调整穿孔相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换损坏元器件
+    need_skill: true
+  - step: 调整穿孔机电磁线圈铁芯和动作衔铁之间的位置，保证纸带质量
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「报警」的具体表现（阅读纸带时出现水平奇偶错报警（17）故障）？
+- node_id: D328
+  name: 号机器人从工
+  phenomena:
+  - 号机器人从工
+  causes:
+  - desc: 更换电弧传感器模板，再对相关部件异常
+    probability: 高
+  solutions:
+  - step: 更换电弧传感器模板，再对工件进行试焊，故障消除，焊缝跟踪恢复了正常
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「号机器人从工」的具体表现（-号机器人从工件焊缝起点起弧后不跟踪焊缝）？
+- node_id: D329
+  name: 掉电
+  phenomena:
+  - 掉电
+  causes:
+  - desc: 因伺服电动机与抱闸一体
+    probability: 高
+  solutions:
+  - step: 因伺服电动机与抱闸一体，更换新的伺服电机后故障消除
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「掉电」的具体表现（当按下启动按钮时系统开始自检但当显示器刚）？
+- node_id: D330
+  name: 这台机床在执
+  phenomena:
+  - 这台机床在执
+  causes:
+  - desc: 因是微型继电器出现问题
+    probability: 高
+  solutions:
+  - step: 许多故障，只要查到原因，处理起采比较容易
+    need_skill: false
+  - step: 因是微型继电器出现问题，更换新的继电器后，故障消除，机床恢复工作
+    need_skill: true
+  need_ticket: true
+  questions:
+  - 请描述「这台机床在执」的具体表现（这台机床在执行加工程序时只执行两条就不往）？
+- node_id: D331
+  name: 停止
+  phenomena:
+  - 停止
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 用电缆替换A电缆，插座号是
+    need_skill: false
+  - step: '!在参数页，手动修改如下二进位参数B）14：“C）参数页：D'
+    need_skill: true
+  - step: '"B）关机，再启动（指总电源开关）'
+    need_skill: false
+  - step: （注意：4EFGHI应出现在屏幕上），有出错信号出现，同时，保护开关应开着
+    need_skill: true
+  need_ticket: false
+  questions:
+  - 请描述「停止」的具体表现（机床正处于自动加工过程中当加工程序进行到）？
+- node_id: D332
+  name: 抖动
+  phenomena:
+  - 抖动
+  - 停止
+  causes:
+  - desc: 因可能由于编码器上有污物而引起的
+    probability: 高
+  - desc: 分析原因可能由于编码器上有污物而引起的
+    probability: 中
+  solutions:
+  - step: 对电动机进行清理，更换电刷，调整换向器，经测试后达到技术要求，重新换上后，该轴运动响声问题解决了
+    need_skill: true
+  - step: 但是工作台抖动现象仍有时出现
+    need_skill: false
+  - step: 故决定在工作台发生抖动时，同样将电动机同伺服阀在联轴器处脱开，发现电动机轴在抖动
+    need_skill: true
+  - step: 分析原因可能由于编码器上有污物而引起的
+    need_skill: false
+  need_ticket: true
+  questions:
+  - 请描述「抖动」的具体表现（工作台9轴方向运动时正向工作正常负方向有）？
+- node_id: D333
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 经处理故障部位后，NO信号正常、机床故障彻底消除了
+    need_skill: false
+  - step: 说明：此处为一故障易发生点，在日常维护中要经常清理一下，确保信号的可靠，以保证机床正常工作
+    need_skill: true
+  - step: 另外，此故障与参数无任何关系，纯羼先人为主，而误入歧途，走了一个大弯路，应引以为戒
+    need_skill: true
+  - step: ·!PP"·
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（在更换模具时实际上冲模已换下来但报警显示）？
+- node_id: D334
+  name: 报警
+  phenomena:
+  - 报警
+  causes:
+  - desc: 需现场排查确认
+    probability: 中
+  solutions:
+  - step: 经处理故障部位后，NO信号正常、机床故障彻底消除了
+    need_skill: false
+  - step: 说明：此处为一故障易发生点，在日常维护中要经常清理一下，确保信号的可靠，以保证机床正常工作
+    need_skill: true
+  - step: 另外，此故障与参数无任何关系，纯羼先人为主，而误入歧途，走了一个大弯路，应引以为戒
+    need_skill: true
+  - step: ·!PP"·
+    need_skill: false
+  need_ticket: false
+  questions:
+  - 请描述「报警」的具体表现（起因是改动参数后休息两天上班后再开机执行）？

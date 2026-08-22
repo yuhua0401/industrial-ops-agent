@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>故障诊断流程 · Agent③</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --surface: #ffffff;
+    --ink: #1a202c;
+    --ink-2: #4a5568;
+    --ink-3: #718096;
+    --line: #d8dce3;
+    --accent: #0e6ba8;
+    --accent-soft: #e3eef7;
+    --ok: #1f7a4d;
+    --ok-soft: #e3f1ea;
+    --warn: #a35c00;
+    --warn-soft: #faf0df;
+    --danger: #b33a3a;
+    --danger-soft: #f8e6e6;
+    --violet: #5b4da6;
+    --violet-soft: #eceaf7;
+    --radius: 10px;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 16px;
+    --space-4: 24px;
+    --space-5: 40px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+            "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+    --mono: "SF Mono", "JetBrains Mono", Consolas, "Courier New", monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: var(--space-5) var(--space-4) var(--space-5); }
+
+  /* ── Header ─────────────────────────────────────────── */
+  header.hero { margin-bottom: var(--space-5); }
+  .eyebrow {
+    font-size: 13px; font-weight: 600; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: var(--space-2);
+  }
+  h1 { font-size: 30px; line-height: 1.25; letter-spacing: -.01em; font-weight: 700; }
+  .sub { color: var(--ink-2); font-size: 15px; margin-top: var(--space-2); max-width: 70ch; }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3);
+  }
+  .chip {
+    font-size: 12.5px; color: var(--ink-2); background: var(--surface);
+    border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px;
+  }
+  .chip b { color: var(--ink); font-weight: 600; }
+
+  /* ── Section ────────────────────────────────────────── */
+  section { margin-top: var(--space-5); }
+  h2 {
+    font-size: 20px; font-weight: 700; letter-spacing: -.01em;
+    display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3);
+  }
+  h2 .no {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 8px; background: var(--ink);
+    color: #fff; font-size: 13px; font-weight: 700; flex: none;
+  }
+  .desc { color: var(--ink-2); font-size: 14.5px; margin-bottom: var(--space-3); max-width: 72ch; }
+
+  /* ── Flow diagram ───────────────────────────────────── */
+  .flow { display: flex; flex-direction: column; gap: 0; align-items: stretch; }
+  .step {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: var(--space-3) var(--space-4); display: flex; gap: var(--space-3);
+    align-items: flex-start; position: relative;
+  }
+  .step .idx {
+    flex: none; width: 30px; height: 30px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; color: #fff; margin-top: 2px;
+  }
+  .step .body { flex: 1; min-width: 0; }
+  .step .name { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+  .step .tag {
+    font-size: 11.5px; font-weight: 600; padding: 1px 8px; border-radius: 6px;
+  }
+  .step .what { font-size: 13.5px; color: var(--ink-2); margin-top: var(--space-1); }
+  .step .detail {
+    margin-top: var(--space-2); font-size: 13px; color: var(--ink-3);
+    display: none; border-top: 1px dashed var(--line); padding-top: var(--space-2);
+  }
+  .step.open .detail { display: block; }
+  .step .toggle {
+    margin-left: auto; flex: none; font-size: 12px; color: var(--accent);
+    background: none; border: none; cursor: pointer; padding: 4px 0; font-family: inherit;
+  }
+  .step .toggle:hover { text-decoration: underline; }
+
+  .arrow { display: flex; align-items: center; justify-content: center; height: 26px; color: var(--ink-3); flex: none; }
+  .arrow::after { content: "↓"; font-size: 15px; }
+
+  /* 分支标签 */
+  .branch { display: flex; gap: var(--space-3); align-items: stretch; }
+  .branch .col { flex: 1; display: flex; flex-direction: column; gap: var(--space-2); }
+  .branch .fork-label {
+    font-size: 12px; font-weight: 600; color: var(--ink-2);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .branch .fork-label::before { content: ""; width: 14px; height: 2px; background: var(--ink-3); }
+
+  /* 三轨并行 */
+  .tracks { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); margin-top: var(--space-2); }
+  .track {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: var(--space-3); border-top: 3px solid;
+  }
+  .track h3.track-title { font-size: 14.5px; font-weight: 700; display: flex; align-items: center; gap: var(--space-2); margin: 0; }
+  .track .src { font-size: 11.5px; font-weight: 600; padding: 1px 8px; border-radius: 6px; }
+  .track p { font-size: 13px; color: var(--ink-2); margin-top: var(--space-2); }
+  .track .conf { font-size: 12.5px; margin-top: var(--space-2); font-weight: 600; }
+  .track.exact { border-top-color: var(--accent); }
+  .track.fuzzy { border-top-color: var(--ok); }
+  .track.llm   { border-top-color: var(--violet); }
+  .src-exact { background: var(--accent-soft); color: var(--accent); }
+  .src-fuzzy { background: var(--ok-soft); color: var(--ok); }
+  .src-llm   { background: var(--violet-soft); color: var(--violet); }
+
+  /* 颜色语义 */
+  .c-parse   { background: var(--ink); }
+  .c-kb      { background: var(--accent); }
+  .c-tracks  { background: var(--ok); }
+  .c-assemble{ background: var(--violet); }
+  .c-report  { background: var(--warn); }
+  .c-check   { background: var(--danger); }
+  .c-ask     { background: #8a4baf; }
+  .c-apply   { background: #4b6fb0; }
+  .c-route   { background: #2f7a8c; }
+  .t-blue  { background: var(--accent-soft); color: var(--accent); }
+  .t-green { background: var(--ok-soft); color: var(--ok); }
+  .t-amber { background: var(--warn-soft); color: var(--warn); }
+  .t-red   { background: var(--danger-soft); color: var(--danger); }
+  .t-violet{ background: var(--violet-soft); color: var(--violet); }
+
+  /* 循环回路 */
+  .loop { display: flex; gap: var(--space-3); align-items: center; }
+  .loop .loop-label {
+    flex: none; font-size: 12.5px; font-weight: 700; color: var(--danger);
+    background: var(--danger-soft); border: 1px solid #eccccc;
+    border-radius: 8px; padding: 6px 12px;
+  }
+  .loop .loop-rule { flex: 1; border-top: 2px dashed var(--danger); position: relative; }
+  .loop .loop-rule::after {
+    content: ""; position: absolute; right: -2px; top: -6px;
+    border: 5px solid transparent; border-left-color: var(--danger); border-top-color: var(--danger);
+  }
+
+  /* ── 表格（降级策略）──────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  th, td { text-align: left; padding: 10px 14px; font-size: 13.5px; vertical-align: top; }
+  thead th {
+    background: #eef0f4; color: var(--ink); font-weight: 600; font-size: 13px;
+    border-bottom: 1px solid var(--line);
+  }
+  tbody tr + tr { border-top: 1px solid var(--line); }
+  td code { font-family: var(--mono); font-size: 12px; background: #eef0f4; padding: 1px 6px; border-radius: 5px; }
+  .sev { font-weight: 700; font-size: 12.5px; white-space: nowrap; }
+  .sev.keep { color: var(--ok); }
+  .sev.degrade { color: var(--warn); }
+  .sev.stop { color: var(--danger); }
+
+  /* 输出示例 */
+  .report {
+    background: #10151c; color: #d7dce2; border-radius: var(--radius);
+    padding: var(--space-4); font-family: var(--mono); font-size: 13px; line-height: 1.8;
+    overflow-x: auto;
+  }
+  .report .k { color: #7fc1ea; }
+  .report .s { color: #a8c98f; }
+  .report .c { color: #5f6b79; }
+  .report .hl { background: rgba(127,193,234,.12); border-radius: 3px; }
+
+  /* 接口表 */
+  .iface { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+  .iface .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: var(--space-3) var(--space-4); }
+  .iface h3.iface-title { font-size: 14px; font-weight: 700; margin: 0 0 var(--space-2); }
+  .iface .fn { font-family: var(--mono); font-size: 12.5px; color: var(--accent); font-weight: 600; display: block; margin-bottom: 4px; }
+  .iface p { font-size: 13px; color: var(--ink-2); }
+
+  footer { margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--line); color: var(--ink-3); font-size: 12.5px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2); }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+  @media (max-width: 720px) {
+    .tracks { grid-template-columns: 1fr; }
+    .branch { flex-direction: column; }
+    .iface { grid-template-columns: 1fr; }
+    .step { padding: var(--space-3); }
+    h1 { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">Agent③ · Fault Diagnosis</div>
+    <h1>故障诊断流程</h1>
+    <p class="sub">设备故障 → 输入解析 → 三轨并行匹配 → 证据组装 → LLM 报告合成 → 充分性判断 → 追问循环 / 工单路由。
+    迁移自 EduAgent 课件「06-试卷批改 Agent」的三轨并行 + Human-in-the-Loop 架构。</p>
+    <div class="meta">
+      <span class="chip">负责 <b>⑤号</b></span>
+      <span class="chip">节点 <b>9</b></span>
+      <span class="chip">追问上限 <b>2 轮</b></span>
+      <span class="chip">入口 <b>diagnose()</b></span>
+    </div>
+  </header>
+
+  <!-- ══════════ 1. 主流程 ══════════ -->
+  <section>
+    <h2><span class="no">1</span>主流程（9 节点）</h2>
+    <p class="desc">点击节点查看实现细节。整体为线性链 + 追问循环，checkpointer（MemorySaver）支撑 interrupt 暂停/恢复。</p>
+
+    <div class="flow">
+
+      <div class="step" data-node>
+        <div class="idx c-parse">1</div>
+        <div class="body">
+          <div class="name">parse_input <span class="tag t-blue">输入解析</span></div>
+          <div class="what">提取故障码（正则 <code>E001</code>）· 现象关键词（去停用词）· 图片降级链（视觉 → OCR → 置空）</div>
+          <div class="detail">故障码优先取入参，其次从文本正则提取并转大写；现象按标点切分、过滤停用词；
+          图片一期置空 <code>image_desc</code>，不阻断流程。</div>
+        </div>
+        <button class="toggle" data-toggle>详情</button>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="step" data-node>
+        <div class="idx c-kb">2</div>
+        <div class="body">
+          <div class="name">load_diag_tree <span class="tag t-blue">加载诊断树 + 知识库</span></div>
+          <div class="what">懒加载诊断树（YAML）· 调 KBClient 混合检索（hybrid_retrieve）· ③ 不可用时优雅降级</div>
+          <div class="detail">查询串 = 故障码 + 用户原文；知识库异常被捕获并记录，<code>kb_hits=[]</code> 继续走诊断树，不中断主流程。</div>
+        </div>
+        <button class="toggle" data-toggle>详情</button>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="step" data-node>
+        <div class="idx c-tracks">3</div>
+        <div class="body">
+          <div class="name">run_diag_tracks <span class="tag t-green">三轨并行</span></div>
+          <div class="what">asyncio.gather(return_exceptions=True) —— 任一轨失败不影响其他轨</div>
+          <div class="detail">三轨并行启动，异常作为返回值处理：失败的轨置空，其余正常写入 State。对齐 exam 的 run_three_tracks_node 容错模式。</div>
+        </div>
+        <button class="toggle" data-toggle>详情</button>
+      </div>
+
+      <!-- 三轨 -->
+      <div class="tracks">
+        <div class="track exact">
+          <h3 class="track-title">轨① 精确匹配 <span class="src src-exact">规则引擎</span></h3>
+          <p>故障码查表命中诊断树节点。<br>确定性匹配，无 LLM 调用。</p>
+          <div class="conf" style="color:var(--accent)">置信度 0.95</div>
+        </div>
+        <div class="track fuzzy">
+          <h3 class="track-title">轨② 模糊匹配 <span class="src src-fuzzy">覆盖率</span></h3>
+          <p>现象关键词与节点现象的覆盖率（命中数 ÷ 输入数），≥ 阈值 0.6。</p>
+          <div class="conf" style="color:var(--ok)">置信度 ≥ 0.6</div>
+        </div>
+        <div class="track llm">
+          <h3 class="track-title">轨③ LLM 推理 <span class="src src-llm">兜底假设</span></h3>
+          <p>树未命中时由 LLM 生成 2-3 个候选原因假设 + 置信度。</p>
+          <div class="conf" style="color:var(--violet)">置信度 ≤ 0.4</div>
+        </div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="step" data-node>
+        <div class="idx c-assemble">4</div>
+        <div class="body">
+          <div class="name">assemble_context <span class="tag t-violet">证据组装</span></div>
+          <div class="what">三轨结果 + kb_hits 前 3 条 → 格式化为 LLM 上下文</div>
+          <div class="detail">输出 <code>evidence_context</code>：诊断树/推理命中 + 知识库片段，供报告生成节点使用。</div>
+        </div>
+        <button class="toggle" data-toggle>详情</button>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="step" data-node>
+        <div class="idx c-report">5</div>
+        <div class="body">
+          <div class="name">generate_report <span class="tag t-amber">LLM 报告合成</span></div>
+          <div class="what">Think 推理（REASON_PROMPT）→ 结构化输出（DIAGNOSIS_REPORT_PROMPT）→ Pydantic 校验</div>
+          <div class="detail">树命中时置信度封顶 0.95；无树命中封顶 0.4。LLM 失败/JSON 解析失败 → <b>模板兜底</b>（直接用命中节点数据渲染）。</div>
+        </div>
+        <button class="toggle" data-toggle>详情</button>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="step" data-node>
+        <div class="idx c-check">6</div>
+        <div class="body">
+          <div class="name">check_sufficiency <span class="tag t-red">充分性判断</span></div>
+          <div class="what">置信度 ≥ 0.7 且 need_ticket 已定 → 直接路由；否则 → 追问</div>
+          <div class="detail">条件路由 <code>_route_after_check</code>：有 clarify_question 走追问路径，否则走 route_next。</div>
+        </div>
+        <button class="toggle" data-toggle>详情</button>
+      </div>
+      <div class="arrow"></div>
+
+      <!-- 分支 -->
+      <div class="branch">
+        <div class="col">
+          <div class="fork-label">低置信 / 信息不足</div>
+          <div class="step" data-node>
+            <div class="idx c-ask">7</div>
+            <div class="body">
+              <div class="name">ask_clarify <span class="tag t-red">HitL 暂停</span></div>
+              <div class="what">interrupt() 冻结图执行，State 存 MemorySaver，等用户回答</div>
+              <div class="detail">优先用诊断树节点预设问题；无预设则 LLM 生成（CLARIFY_PROMPT）。对齐 exam 的 teacher_review 节点。</div>
+            </div>
+            <button class="toggle" data-toggle>详情</button>
+          </div>
+          <div class="arrow"></div>
+          <div class="step" data-node>
+            <div class="idx c-apply">8</div>
+            <div class="body">
+              <div class="name">apply_clarify_answer <span class="tag t-blue">合并回答</span></div>
+              <div class="what">合并用户补充 → 更新 fault_code / phenomena → turn+1 → 回到轨 3 重新诊断</div>
+              <div class="detail">对齐 exam 的 apply_teacher_decision：清空旧报告与三轨结果，重新执行诊断链。最多 2 轮。</div>
+            </div>
+            <button class="toggle" data-toggle>详情</button>
+          </div>
+        </div>
+        <div class="col">
+          <div class="fork-label">置信足够</div>
+          <div class="step" data-node>
+            <div class="idx c-route">9</div>
+            <div class="body">
+              <div class="name">route_next <span class="tag t-green">结果路由</span></div>
+              <div class="what">need_ticket=true → 交 ④ Supervisor → ①号 create_ticket；否则返回用户</div>
+              <div class="detail">⑤ 不直接调用 ①号：只返回 <code>structured_output</code>（诊断报告），由 Supervisor 决定下一步。</div>
+            </div>
+            <button class="toggle" data-toggle>详情</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 循环回路 -->
+      <div class="loop" style="margin-top:var(--space-2)">
+        <span class="loop-label">追问循环 × ≤2 轮</span>
+        <div class="loop-rule"></div>
+        <span style="font-size:12px;color:var(--ink-3)">ask_clarify → apply_clarify_answer → run_diag_tracks</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════ 2. 降级策略 ══════════ -->
+  <section>
+    <h2><span class="no">2</span>降级策略</h2>
+    <p class="desc">每一条链路都有兜底，任何单点故障都不会让诊断流程挂死。</p>
+    <table>
+      <thead>
+        <tr><th>故障场景</th><th>降级行为</th><th>级别</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>知识库（③）不可用</td>
+          <td>跳过检索，<code>kb_hits=[]</code>，继续走诊断树匹配</td>
+          <td><span class="sev degrade">降级</span></td>
+        </tr>
+        <tr>
+          <td>诊断树无命中</td>
+          <td>LLM 兜底推理，置信度压制 ≤ 0.4</td>
+          <td><span class="sev degrade">降级</span></td>
+        </tr>
+        <tr>
+          <td>LLM 超时 / JSON 解析失败</td>
+          <td>模板兜底：直接渲染命中节点的 causes / solutions，标记 <code>_template=true</code></td>
+          <td><span class="sev degrade">降级</span></td>
+        </tr>
+        <tr>
+          <td>图片无法解析</td>
+          <td><code>image_desc</code> 置空，提示用户补充文字描述</td>
+          <td><span class="sev keep">继续</span></td>
+        </tr>
+        <tr>
+          <td>追问超 2 轮仍未确认</td>
+          <td>强制出报告 / 转人工，不再循环</td>
+          <td><span class="sev keep">继续</span></td>
+        </tr>
+        <tr>
+          <td>全链路故障</td>
+          <td>返回「无法自动诊断，建议人工介入」+ <code>need_ticket=true</code>（保底不挂死）</td>
+          <td><span class="sev stop">保底</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ══════════ 3. 输出格式 ══════════ -->
+  <section>
+    <h2><span class="no">3</span>诊断报告输出</h2>
+    <p class="desc">LLM 结构化输出，Pydantic 校验（<code>DiagnosisReport</code>）。</p>
+    <div class="report">
+<span class="c"># structured_output（route_next 返回给 Supervisor）</span>
+{
+  <span class="k">"conclusion"</span>: <span class="s">"电机过载保护触发"</span>,
+  <span class="k">"causes"</span>: [
+    { <span class="k">"desc"</span>: <span class="s">"负载过大或卡死"</span>, <span class="k">"probability"</span>: <span class="s">"高"</span> },
+    { <span class="k">"desc"</span>: <span class="s">"供电电压过低"</span>, <span class="k">"probability"</span>: <span class="s">"中"</span> }
+  ],
+  <span class="k">"solutions"</span>: [
+    { <span class="k">"step"</span>: <span class="s">"断电后手动盘车确认是否卡死"</span>, <span class="k">"need_skill"</span>: <span class="s">false</span> },
+    { <span class="k">"step"</span>: <span class="s">"万用表检测三相供电电压"</span>, <span class="k">"need_skill"</span>: <span class="s">true</span> }
+  ],
+  <span class="k hl">"need_ticket"</span>: <span class="s">true</span>,
+  <span class="k">"confidence"</span>: <span class="s">0.87</span>,
+  <span class="k">"ticket_reason"</span>: <span class="s">"诊断树标记需上门处理"</span>
+}
+    </div>
+  </section>
+
+  <!-- ══════════ 4. 对外接口 ══════════ -->
+  <section>
+    <h2><span class="no">4</span>对外接口</h2>
+    <div class="iface">
+      <div class="card">
+        <h3 class="iface-title">④ Supervisor 调用</h3>
+        <span class="fn">build_diagnosis_graph()</span>
+        <p>编译后的 LangGraph 图，Supervisor 集成入口。</p>
+        <span class="fn" style="margin-top:var(--space-2)">diagnose(query, fault_code, image)</span>
+        <p>诊断入口封装（待 Supervisor 集成时提供）。</p>
+      </div>
+      <div class="card">
+        <h3 class="iface-title">管理后台（api/admin）</h3>
+        <span class="fn">diag_tree.get_tree()</span>
+        <p>诊断树全量结构，供管理后台展示与维护。</p>
+        <span class="fn" style="margin-top:var(--space-2)">data/diag_tree_full.yaml</span>
+        <p>诊断树种子数据（245 节点），⑤号维护。</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Agent③ 故障诊断线 · ⑤号负责 · 迁移自 EduAgent 课件 V7.7「06-试卷批改 Agent」</span>
+    <span>backend/agents/diagnosis/</span>
+  </footer>
+</div>
+
+<script>
+  // 节点详情展开/收起（尊重 prefers-reduced-motion）
+  document.querySelectorAll("[data-toggle]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var step = btn.closest(".step");
+      var open = step.classList.toggle("open");
+      btn.textContent = open ? "收起" : "详情";
+    });
+  });
+</script>
+</body>
+</html>
