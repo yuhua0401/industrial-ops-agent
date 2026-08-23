@@ -16,6 +16,7 @@ import asyncio
 import json
 import re
 from pathlib import Path
+from typing import Any
 
 # 直接运行（python nodes.py）时项目根不在 sys.path，这里补上；作为包导入时无副作用。
 if __package__ in (None, ""):

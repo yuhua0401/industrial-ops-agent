@@ -15,8 +15,10 @@ exclude = [
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
-# 允许未使用 import（模块 docstring 风格宽松）
-ignore = ["F401"]
+# F401 允许未使用 import（模块 docstring 风格宽松）
+# E402 测试文件在 sys.path 引导后 import backend.*（与 tests/test_diagnosis.py 现有模式一致）
+# B008 FastAPI 标准写法：Depends(...) 作为参数默认值（auth/knowledge/ticket 等均如此）
+ignore = ["F401", "E402", "B008"]
 
 [tool.mypy]
 python_version = "3.11"

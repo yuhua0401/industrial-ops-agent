@@ -44,9 +44,9 @@
 |---|---|
 | 知识问答 | 意图路由 → 知识库 Agent（RAG 检索 → 生成） |
 | 故障诊断 | 意图路由 → 故障诊断 Agent（诊断树三轨匹配 → 追问 → 报告） |
-| 报修全流程（规划） | 意图路由 → 故障诊断 → 工单管理 → 售后协调（pipeline 串联） |
+| 报修全流程 | 意图路由 → 故障诊断 → 工单管理 → 售后协调（pipeline 串联） |
 
-当前各 Agent 的 LangGraph 图已独立实现（`build_*_graph()`），但**尚无 Supervisor 主编排层**串接；统一对话入口 `api/chat.py` 用「规则拦截 + LLM 路由 + 流式执行器（占位实现）」替代。
+各 Agent 的 LangGraph 图已独立实现（`build_*_graph()`），由 `backend/supervisor.py`（Supervisor 服务类）编排；统一对话入口 `api/chat.py` 通过「规则拦截 + LLM 路由 + 流式执行器」调用 Supervisor 驱动各 Agent Graph，pipeline 模式串联 诊断 → 工单 → 售后。
 
 ## 目录结构与职责
 

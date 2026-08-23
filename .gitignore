@@ -32,6 +32,9 @@ logs/
 *.db
 *.sqlite3
 
+# 本地模型权重（体积大，不纳入版本控制）
+backend/models/
+
 # Docker
 .docker/
 

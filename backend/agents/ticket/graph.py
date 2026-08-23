@@ -1,9 +1,10 @@
 """
 graph - 工单管理 Agent 的 LangGraph 图定义
 """
-from langgraph.graph import StateGraph, END
-from backend.agents.ticket.state import TicketState
+from langgraph.graph import END, StateGraph
+
 from backend.agents.ticket.nodes import create_ticket_node
+from backend.agents.ticket.state import TicketState
 
 
 def build_ticket_graph() -> StateGraph:

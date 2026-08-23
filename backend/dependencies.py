@@ -62,7 +62,7 @@ async def get_current_user(
             algorithms=[settings.jwt_algorithm],
         )
         user_id: str = payload.get("sub")                                  # 标准字段 sub = 用户ID
-        role: str = payload.get("role", "student")                         # 角色
+        role: str = payload.get("role", "customer")                        # 角色（默认 customer，对齐 User 模型）
         tenant_id: str = payload.get("tenant_id", settings.default_tenant_id)  # 租户
 
         if not user_id:                         # Token 里没有用户ID，视为无效

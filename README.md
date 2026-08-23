@@ -1,9 +1,6 @@
 # industrial-ops-agent — 工业设备智能运维多 Agent 平台
 
-面向 **工业设备制造商与使用方** 的多 Agent 智能运维平台，以宝信软件在钢铁/流程行业「设备全生命周期管理」的业务实践为蓝本，融合「工厂运维智能 Agent」与「多 Agent 编排框架」两类项目的设计与实现经验，用大模型智能体重塑设备运维的 **点检 → 诊断 → 报修 → 备件 → 售后** 全链路。
-
-> **参考业务对象**：宝信软件（[iEQMS 设备管理系统](https://product.baosight.com/erp/4285)、AI 点巡检智能体、智慧设备现场管理、故障诊断与预测性维护）
-> **参考项目**：[factory-operation-agent](https://gitee.com/zllyws/factory-operation-agent)（工厂运维智能 Agent，SpringBoot + 百炼大模型）、[edu-agent](https://gitee.com/czq401/edu-agent)（LangGraph 多 Agent 编排）
+面向 **工业设备制造商与使用方** 的多 Agent 智能运维平台，面向钢铁/流程行业「设备全生命周期管理」的业务场景，用大模型智能体重塑设备运维的 **点检 → 诊断 → 报修 → 备件 → 售后** 全链路。
 
 ## 为什么做这个
 
@@ -13,22 +10,22 @@
 2. **故障响应慢**——从客户报障、人工判断、创建工单到派单上门，链路长、反复确认信息；
 3. **管理靠人盯**——点检计划、设备状态、保修期、备件库存全凭人工记忆和纸质台账，异常发现滞后。
 
-本平台借鉴宝信软件的思路：把工艺与维修经验固化为 **知识库 + 诊断树**，用 **AI 智能体** 把「人找事」变成「事找人」，让设备运维从**被动响应**走向**主动服务**。
+本平台把工艺与维修经验固化为 **知识库 + 诊断树**，用 **AI 智能体** 把「人找事」变成「事找人」，让设备运维从**被动响应**走向**主动服务**。
 
 ## 核心能力
 
-| 能力 | 说明 | 对应宝信实践 |
+| 能力 | 说明 | 状态 |
 |---|---|---|
-| 设备台账与生命周期 | 设备档案、安装位置、保修期、运行状态一站式管理 | iEQMS 资产管理/状态管理 |
-| 运维知识库问答 | RAG 检索设备手册、维修案例，7×24 智能问答 | 运维资料智能问答 |
-| 故障诊断推理 | 诊断树 + 大模型推理双引擎，多轮追问，输出带置信度的根因与方案 | 设备故障分析智能体 |
-| 智能点检巡检 | 点检任务自动生成、路线规划、异常重点提醒（规划中） | AI 点巡检智能体 |
-| 维修工单闭环 | 诊断结论自动生成工单，流转、催单、审计日志全记录 | 点巡检异常→工单闭环 |
-| 备件与售后协调 | 保修查询、备件库存核对、上门预约（对接 ERP/WMS） | 智慧设备现场管理 |
+| 设备台账与生命周期 | 设备档案、安装位置、保修期、运行状态一站式管理 | ✅ 已实现 |
+| 运维知识库问答 | RAG 检索设备手册、维修案例，7×24 智能问答 | ✅ 已实现 |
+| 故障诊断推理 | 诊断树 + 大模型推理双引擎，多轮追问，输出带置信度的根因与方案 | ✅ 已实现 |
+| 智能点检巡检 | 点检任务自动生成、路线规划、异常重点提醒 | ⬜ 规划中 |
+| 维修工单闭环 | 诊断结论自动生成工单，流转、催单、审计日志全记录 | ✅ 已实现 |
+| 备件与售后协调 | 保修查询、备件库存核对、上门预约 | ✅ 已实现 |
 
 ## 系统架构
 
-### 主编排图（目标架构）
+### 主编排图
 
 ```
                         ┌──────────────────────────────┐
@@ -67,35 +64,33 @@ extract_input → retrieve/reason → generate → check_quality ─┬─ pass 
 
 ## 技术选型
 
-| 领域 | 选型 | 参考来源 |
-|---|---|---|
-| 语言 / 编排 | Python 3.11+ · LangGraph 1.0+ · LangChain 1.2+ | edu-agent |
-| 大模型 | DeepSeek V4（Flash 主力 / Pro 推理），兼容 OpenAI 接口 | 当前栈 |
-| 结构化输出 | Pydantic + `with_structured_output`（function calling） | edu-agent |
-| 向量检索 | Milvus 2.4+（Dense + Sparse 混合检索）· BGE-M3 · BGE-Reranker | 当前栈 |
-| 后端 | FastAPI + SSE 流式响应 | 当前栈 |
-| 数据库 | PostgreSQL + asyncpg + SQLAlchemy 2.0 | 当前栈 |
-| 认证 | JWT（python-jose + bcrypt） | 当前栈 |
-| 部署 | Docker Compose（私有化部署）· Nginx（反代 + SSE） | 当前栈 |
-| 监控（规划） | Langfuse（LLM 链路追踪与评估） | edu-agent |
-
-> 注：参考项目 factory-operation-agent 采用 **Java/SpringBoot + MyBatis-Plus + 阿里云百炼大模型**。若团队更擅长 Java 体系，可将本方案的 Python/LangGraph 部分替换为 SpringBoot + Spring AI 或百炼智能体平台，架构思路（Agent 划分、诊断树、工单闭环）完全通用。
+| 领域 | 选型 |
+|---|---|
+| 语言 / 编排 | Python 3.11+ · LangGraph 1.0+ · LangChain 1.2+ |
+| 大模型 | DeepSeek V4（Flash 主力 / Pro 推理），兼容 OpenAI 接口 |
+| 结构化输出 | Pydantic + `with_structured_output`（function calling） |
+| 向量检索 | Milvus 2.4+（Dense + Sparse 混合检索）· BGE-M3 · BGE-Reranker |
+| 后端 | FastAPI + SSE 流式响应 |
+| 数据库 | PostgreSQL + asyncpg + SQLAlchemy 2.0 |
+| 认证 | JWT（python-jose + bcrypt） |
+| 部署 | Docker Compose（私有化部署）· Nginx（反代 + SSE） |
+| 监控（规划） | Langfuse（LLM 链路追踪与评估） |
 
 ## 路线图
 
 ### Phase 1 — 诊断闭环（MVP）
+- [x] 故障诊断 Agent（诊断树 + LLM 推理，带置信度与追问）
+- [x] 工单管理 Agent（诊断结论自动生成工单，状态机 + 审计日志）
+- [x] 统一对话入口（规则拦截 + LLM 路由 + 流式响应）
 - [ ] 设备台账 Agent（设备档案/保修期/状态查询）
-- [ ] 故障诊断 Agent（诊断树 + LLM 推理，带置信度与追问）
-- [ ] 工单管理 Agent（诊断结论自动生成工单，状态机 + 审计日志）
-- [ ] 统一对话入口（规则拦截 + LLM 路由 + 流式响应）
 
 ### Phase 2 — 知识底座
-- [ ] 运维知识库（RAG：手册/维修案例入库，混合检索 + 精排）
-- [ ] 售后协调 Agent（保修/备件/预约，对接 ERP/WMS）
+- [x] 运维知识库（RAG：手册/维修案例入库，混合检索 + 精排）
+- [x] 售后协调 Agent（保修/备件/预约）
+- [x] Supervisor 主编排（多 Agent pipeline 全流程）
 
 ### Phase 3 — 主动运维
 - [ ] 点检巡检 Agent（任务自动生成、路线规划、异常提醒）
-- [ ] Supervisor 主编排（多 Agent pipeline 全流程）
 - [ ] 管理后台（知识库管理 / Agent 配置 / 对话评估）
 
 ### Phase 4 — 预测性维护（远期）
@@ -106,49 +101,58 @@ extract_input → retrieve/reason → generate → check_quality ─┬─ pass 
 ```
 backend/
 ├── agents/                 # 各 Agent 实现（每 Agent 独立 State/Node/Graph/Prompt）
-│   ├── asset/              #   设备台账 Agent
 │   ├── knowledge/          #   运维知识库 Agent（RAG）
 │   ├── diagnosis/          #   故障诊断 Agent（诊断树 + 追问循环）
-│   ├── inspection/         #   点检巡检 Agent（规划中）
-│   ├── ticket/             #   工单管理 Agent
-│   └── after_sale/         #   备件与售后协调 Agent（Tool）
+│   ├── ticket/             #   工单管理 Agent（真实落库 + 审计）
+│   └── after_sale/         #   备件与售后协调 Agent（保修/配件/预约）
 ├── core/                   # 核心基础设施
 │   ├── llm_factory.py      #   LLM 工厂（按 Agent 路由 / 结构化输出 / 缓存）
 │   ├── retry.py            #   重试与降级（retry → fallback → raise）
 │   ├── exceptions.py       #   统一异常体系
 │   ├── logger.py           #   结构化日志
-│   └── config.py           #   配置中心
-├── api/                    # 对外 API（chat / ticket / admin）
+│   └── query_classifier.py #   MiniLM 意图分类器
+├── api/                    # 对外 API（chat / knowledge / ticket / diagnosis / after_sale）
 ├── db/                     # 数据库（models / migrations）
-├── knowledge_base/         # RAG 管线（loader/splitter/embedder/retriever/reranker）
-├── supervisor.py           # Supervisor 主编排图
+├── knowledge_base/         # RAG 管线（loader/splitter/embedder/writer/retriever/reranker）
+├── session_state.py        # 会话状态注册表（pipeline 中断续跑）
+├── supervisor.py           # Supervisor 主编排服务类
 └── main.py                 # FastAPI 入口
 
-data/                       # 知识库数据（诊断树 / 维修实例，脱敏）
+data/                       # 知识库数据（诊断树 / 维修实例 / 知识库样本，脱敏）
 deploy/                     # docker-compose / Dockerfile / nginx / .env.example
 docs/                       # 架构 / API / 部署文档
-scripts/                    # 建库 / 迁移 / 评估 / 演示
+scripts/                    # 建库 / 数据库初始化 / 种子数据 / 评估 / 演示
 tests/                      # 测试
 ```
 
 ## 快速开始
 
 ```bash
-# 1. 安装依赖
+# 1. 安装依赖（推荐 conda 环境：conda create -n industrial_agent python=3.11 -y）
 pip install -r requirements.txt
 
 # 2. 配置环境变量（填写 DEEPSEEK_API_KEY 等）
 cp deploy/.env.example .env.local
 
-# 3. 初始化数据库
+# 3. 启动 PostgreSQL / Milvus 等依赖（Docker）
+docker compose -f deploy/docker-compose.yml up -d
+
+# 4. 初始化数据库（建表 + 索引）
 python scripts/migrate.py
 
-# 4. 启动服务
-uvicorn backend.main:app --reload --port 8000
+# 5. 写入开发种子数据（用户 / 客户 / 设备，幂等）
+python scripts/seed_dev_data.py
+
+# 6. 构建知识库（可选，将设备手册写入 Milvus 向量库）
+python scripts/build_knowledge_base.py data/knowledge_sample.md --course-id CNC-1000 --no-context
+
+# 7. 启动服务
+python -X utf8 -m uvicorn backend.main:app --reload --port 8000
 ```
 
 - API 文档：http://localhost:8000/docs
 - 健康检查：http://localhost:8000/health
+- 种子账号：`engineer / admin123`、`customer / admin123`
 
 ```bash
 # 测试

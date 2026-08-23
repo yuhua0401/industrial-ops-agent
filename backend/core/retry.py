@@ -38,14 +38,14 @@ NON_RETRYABLE_ERRORS = (
 
 MAX_RETRIES = 2                  # 最多重试 2 次（加上首次 = 共 3 次尝试）
 RETRY_DELAYS = [1.0, 3.0]        # 第 1 次重试前等 1 秒，第 2 次前等 3 秒
-TIMEOUT_PER_ATTEMPT = 60.0       # 单次调用最多等 30 秒，超时算失败
+TIMEOUT_PER_ATTEMPT = 60.0       # 单次调用最多等 60 秒，超时算失败
 
 
 def with_retry(agent_type: str = ""):
     """三层兜底装饰器工厂。给异步函数套上「重试 → 降级 → 系统兜底」三层保护。
 
     用法：
-        @with_retry(agent_type="qa")
+        @with_retry(agent_type="knowledge")
         async def _invoke():
             return await graph.ainvoke(state, config=config)
     """
@@ -125,13 +125,13 @@ class AgentFallbackHandler:
         logger.info("fallback.knowledge_unavailable")
         return {
             "fallback_used": True,
-            "content": "⚠️ 知识库检索暂时不可用，请稍后重试或直接联系教师提问。",
+            "content": "⚠️ 知识库检索暂时不可用，请稍后重试或联系人工客服/技术支持。",
             "structured_output": None,
         }
 
     @classmethod
     async def _inspection_fallback(cls) -> dict:
-        """报告分析降级：评分服务不可用，标记需人工复核。"""
+        """报告分析降级：服务不可用，标记需人工复核。"""
         logger.info("fallback.inspection_basic")
         return {
             "fallback_used": True,
@@ -141,12 +141,12 @@ class AgentFallbackHandler:
 
     @classmethod
     async def _diagnosis_fallback(cls) -> dict:
-        """故障诊断降级：标记需教师复核。"""
+        """故障诊断降级：标记需人工复核。"""
         logger.info("fallback.diagnosis_basic")
         return {
             "fallback_used": True,
             "needs_teacher_review": True,
-            "fallback_note": "故障诊断服务暂时不可用，已标记为需人工批改。",
+            "fallback_note": "故障诊断服务暂时不可用，已标记为需人工复核。",
         }
 
     @classmethod
@@ -173,10 +173,10 @@ class AgentFallbackHandler:
 def _system_fallback_response(agent_type: str) -> dict:
     """第三层：系统级兜底。所有降级都失败后返回它，保证用户始终能收到响应。"""
     messages = {                                      # 按 agent_type 给不同的友好提示
-        "knowledge":    "非常抱歉，智能问答服务暂时不可用，请稍后再试，或直接联系教师提问。",
+        "knowledge":    "非常抱歉，智能问答服务暂时不可用，请稍后再试，或联系人工客服/技术支持。",
         "inspection":   "非常抱歉，报告分析服务暂时不可用，您的提交已保存，待服务恢复后将自动处理。",
-        "diagnosis":    "非常抱歉，故障诊断服务暂时不可用，请稍后重新上传。",
-        "ticket":       "非常抱歉，工单管理服务暂时不可用，请稍后重新开始。",
+        "diagnosis":    "非常抱歉，故障诊断服务暂时不可用，请稍后重新发起诊断。",
+        "ticket":       "非常抱歉，工单管理服务暂时不可用，请稍后重新操作。",
         "after_sale":   "非常抱歉，售后协调服务暂时不可用，请稍后重试。如需紧急服务请直接拨打客服热线。",
     }
     content = messages.get(agent_type, "服务暂时不可用，请稍后再试。")  # 找不到就用通用提示

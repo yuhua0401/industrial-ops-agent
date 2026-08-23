@@ -16,7 +16,8 @@ from backend.core.logger import get_logger
 logger = get_logger(__name__)
 backend_path = os.path.dirname(os.path.dirname(__file__))
 _settings = get_settings()
-RERANK_MAX_INPUT_CHARS = _settings.reranker_max_input_chars   # 截断过长文档，防止超出 CrossEncoder max_length
+# 截断过长文档，防止超出 CrossEncoder max_length
+RERANK_MAX_INPUT_CHARS = _settings.reranker_max_input_chars
 
 
 @dataclass
@@ -49,7 +50,10 @@ class BGEReranker:
     def __init__(self):
         os.environ["ACCELERATE_USE_META_DEVICE"] = "0"
         settings = get_settings()
-        model_path = os.path.join(backend_path, settings.reranker_model_path)
+        # normpath 规范化 backend/./models → backend/models
+        model_path = os.path.normpath(
+            os.path.join(backend_path, settings.reranker_model_path)
+        )
 
         use_local = (
             os.path.exists(model_path)

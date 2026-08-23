@@ -10,9 +10,10 @@ import time
 from dataclasses import dataclass, field
 from typing import Optional
 
+from langchain_core.documents import Document
+
 from backend.config import get_settings
 from backend.core.logger import get_logger
-from langchain_core.documents import Document
 
 logger = get_logger(__name__)
 backend_path = os.path.dirname(os.path.dirname(__file__))
@@ -46,6 +47,7 @@ class BGEMEmbedder:
         # 但当前锁定 transformers==4.51.0 不受影响。
         # 此补丁作为保险，避免未来升级时报 ImportError。
         import importlib.util as _ilu
+
         from transformers.utils import import_utils as _tf_iu
         if not hasattr(_tf_iu, "is_torch_fx_available"):
             _tf_iu.is_torch_fx_available = (
@@ -86,7 +88,10 @@ class BGEMEmbedder:
     def get_instance(cls) -> "BGEMEmbedder":
         """获取单例（首次调用时加载模型，后续复用）"""
         if cls._instance is None:
-            bge3_path = os.path.join(backend_path, get_settings().bge_m3_model_path)
+            # normpath 规范化 backend/./models → backend/models
+            bge3_path = os.path.normpath(
+                os.path.join(backend_path, get_settings().bge_m3_model_path)
+            )
             cls._instance = BGEMEmbedder(bge3_path)
         return cls._instance
 
@@ -229,7 +234,9 @@ def embed_chunks(
         # BGE-M3 批量推理：同时拿到 dense 和 sparse
         dense_vecs, sparse_vecs = embedder.encode(texts, batch_size=batch_size)
 
-        for i, (chunk, dense, sparse) in enumerate(zip(batch, dense_vecs, sparse_vecs)):
+        for i, (chunk, dense, sparse) in enumerate(
+            zip(batch, dense_vecs, sparse_vecs, strict=True)
+        ):
             global_index = batch_start + i    # 在整个文档中的顺序编号
 
             all_doc_chunks.append(DocumentChunk(

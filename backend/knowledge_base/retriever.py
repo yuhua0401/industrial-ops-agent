@@ -44,7 +44,7 @@ class KnowledgeBaseRetriever:
         )
 
     @staticmethod
-    def _build_filter(tenant_id: str, course_id: Optional[str] = None) -> str:
+    def _build_filter(tenant_id: str, course_id: str | None = None) -> str:
         """构建 Milvus bool 过滤表达式，对字符串做转义防止注入。"""
         safe_tenant = tenant_id.replace('"', '\\"')
         expr = f'tenant_id == "{safe_tenant}"'
@@ -53,12 +53,20 @@ class KnowledgeBaseRetriever:
             expr += f' and course_id == "{safe_course}"'
         return expr
 
+    def _ensure_loaded(self) -> None:
+        """确保 collection 已加载（Milvus 默认不常驻内存，重启后需重新 load）。"""
+        try:
+            if self._client.has_collection(self.collection_name):
+                self._client.load_collection(self.collection_name)
+        except Exception as e:
+            logger.warning("retriever.load_failed", error=str(e))
+
     def hybrid_search(
         self,
         query_embedding: list[float],
         query_sparse: dict,
         tenant_id: str,
-        course_id: Optional[str] = None,
+        course_id: str | None = None,
         top_k: int = VECTOR_TOP_K,
     ) -> list[dict]:
         """Dense + Sparse 双路 ANN → WeightedRanker 融合，返回候选文档。
@@ -77,6 +85,7 @@ class KnowledgeBaseRetriever:
         if not _PYMILVUS_AVAILABLE:
             raise ImportError("pymilvus 未安装，无法执行 Hybrid 检索。请先 pip install pymilvus")
 
+        self._ensure_loaded()   # 先加载 collection（重启后需重新 load）
         filters = self._build_filter(tenant_id, course_id)
 
         # Dense 检索：COSINE 匹配 BGE-M3 dense 向量（L2 归一化后等价余弦相似度）
@@ -137,7 +146,7 @@ class KnowledgeBaseRetriever:
 
 async def hybrid_retrieve(
     query: str,
-    device_model: Optional[str] = None,
+    device_model: str | None = None,
     top_k: int = VECTOR_TOP_K,
 ) -> list[dict]:
     """模块级薄封装：向量化 Query + Hybrid 召回。

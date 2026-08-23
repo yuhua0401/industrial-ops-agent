@@ -2,10 +2,11 @@
 state - 售后协调 Agent 的状态定义
 """
 from typing import Annotated, Optional
-from typing_extensions import TypedDict
-from langgraph.graph.message import add_messages
+
 from langchain_core.messages import BaseMessage
+from langgraph.graph.message import add_messages
 from pydantic import BaseModel, Field
+from typing_extensions import TypedDict
 
 
 class WarrantyInfo(BaseModel):
@@ -34,8 +35,12 @@ class AfterSaleState(TypedDict):
     session_id: str
     customer_id: str
     device_sn: str
+    message: str                         # 用户诉求原文（路由分类依据）
     request_type: str                    # warranty / parts / appointment / followup
-    warranty_info: Optional[dict]
-    part_order: Optional[dict]
-    appointment_time: Optional[str]
+    warranty_info: dict | None
+    part_order: dict | None
+    appointment_time: str | None
+    appointment_info: dict | None
+    stock_info: dict | None
+    reply: str                           # 最终回复文本（API 层渲染用）
     service_completed: bool

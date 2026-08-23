@@ -4,15 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-这是一个面向**工业设备制造商与使用方**的多 Agent 智能运维平台。业务蓝本为宝信软件在钢铁/流程行业的设备全生命周期管理实践（iEQMS 设备管理、AI 点巡检、设备故障诊断、智慧设备现场管理）；架构参考两个项目：`factory-operation-agent`（工厂运维智能 Agent）与 `edu-agent`（LangGraph 多 Agent 编排）。
+这是一个面向**工业设备制造商与使用方**的多 Agent 智能运维平台，面向钢铁/流程行业的设备全生命周期管理场景（设备管理、AI 点巡检、设备故障诊断、智慧设备现场管理）。
 
 系统用 AI 智能体重塑设备运维的 **点检 → 诊断 → 报修 → 备件 → 售后** 全链路，目标是从「被动响应」走向「主动服务」——把「人找事」变成「事找人」。
 
-> ⚠️ **注意**：本仓库由「设备厂商智能客服系统」（`zhinengkefuagent`）演进而来。当前处于**新项目起步阶段**，README 描述的是**目标架构**；实际代码从 `zhinengkefuagent` 迁移，尚未完成「设备台账 / 点检巡检 / Supervisor 主编排」等模块。动手前先读「当前实现状态」与「迁移待办」。
+> ⚠️ **注意**：当前为**新项目起步阶段**，已实现诊断/知识库/工单/售后/主编排等核心模块；「设备台账 / 点检巡检」等仍为规划中。动手前先读「当前实现状态」与「当前已知问题」。
 
 ## 技术栈
 
-- **语言**: Python 3.11+
+- **语言**: Python 3.11（推荐用 conda 环境 `industrial_agent`：`conda activate industrial_agent`，已装齐全部依赖）
 - **AI 编排框架**: LangGraph 1.0+ (State Graph + ToolNode + Checkpointer)
 - **大模型**: DeepSeek V4 Flash（主力）/ Pro（复杂推理），兼容 OpenAI 接口，GPT 可作兜底
 - **结构化输出**: Pydantic + with_structured_output (function_calling)
@@ -28,19 +28,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 常用命令
 
+- **启动 PostgreSQL（Docker）**: `docker compose -f deploy/docker-compose.yml up -d postgres`（映射宿主机 5432，库 `equipment_cs`，用户 `postgres/postgres`）
+- **启动全部依赖（PG/Milvus/MinIO/etcd）**: `docker compose -f deploy/docker-compose.yml up -d`
+- **数据库迁移（建表 + 索引）**: `python scripts/migrate.py`（服务启动时也会自动执行幂等迁移）
+- **开发种子数据（用户/客户/设备，幂等）**: `python scripts/seed_dev_data.py`（账号 `engineer/admin123`、`customer/admin123`）
 - **启动开发服务器**: `uvicorn backend.main:app --reload --port 8000`
 - **运行测试**: `pytest tests/ -v`
 - **运行诊断线专项测试**: `pytest tests/test_diagnosis.py -v`
 - **故障诊断离线演示**（无需 API Key，注入 FakeLLM）: `python scripts/demo_diagnosis.py` 或 `python backend/agents/diagnosis/graph.py`
-- **数据库迁移**: `python scripts/migrate.py`（服务启动时也会自动执行幂等迁移）
-- **知识库建库**: `python scripts/build_knowledge_base.py`（当前只到嵌入为止，Milvus 写入端未实现）
-- **Docker 构建**: `docker compose -f deploy/docker-compose.yml up -d`
+- **知识库建库**: `python scripts/build_knowledge_base.py <文档路径> [--course-id 设备型号] [--no-context]`（完整四步：读取→分块→BGE-M3嵌入→写Milvus）
+- **Docker 构建**: `docker compose -f deploy/docker-compose.yml up -d --build`
 - **配置**: 复制 `deploy/.env.example` 为根目录 `.env.local` 并填写
 
 ## 开发规范与约定
 
 - **代码风格**: 遵循 Ruff 和 mypy 配置，提交前必须通过 `ruff check .` 和 `mypy backend/`。
-- **提交信息**: 使用约定式提交 (Conventional Commits)，格式为 `<type>(<scope>): <description>`，例如 `feat(agent-diagnosis): 完成故障诊断线迁移与企业级加固`。
+- **提交信息**: 使用约定式提交 (Conventional Commits)，格式为 `<type>(<scope>): <description>`，例如 `feat(agent-diagnosis): 完成故障诊断线实现与企业级加固`。
 - **类型安全**: 所有函数必须标注类型，禁止使用 `Any`（确有必要时用 `# type: ignore` 注释并说明理由）。
 - **错误处理**: Agent 节点统一返回 `{"error": null, "data": ...}` 或 `{"error": "错误信息", "data": null}` 格式；LLM 调用失败走 `retry → fallback → raise` 链路（`core/retry.py` 已封装 `with_retry` 装饰器与 `AgentFallbackHandler`）。
 - **LLM 获取入口**: 所有 Agent 必须通过 `backend/core/llm_factory.py` 的 `get_llm(agent_type)` / `get_structured_llm(agent_type, schema)` 获取模型，禁止直接调用 `init_chat_model`。agent_type 路由表见 `_AGENT_MODEL_ROUTING`；新增 Agent 时在此注册。
@@ -69,15 +72,16 @@ backend/
 │   │   ├── nodes.py           #     retrieve_node / generate_node（重试 2 次 + 转人工兜底）
 │   │   ├── state.py           #     KnowledgeState + KnowledgeResult
 │   │   └── prompts.py
-│   ├── ticket/                #   工单管理 Agent（结构化生成可用，真实 API 未接）
+│   ├── ticket/                #   工单管理 Agent（真实落库 + 审计）
 │   │   ├── graph.py           #     create_ticket → END
-│   │   ├── nodes.py           #     create_ticket_node（ticket_id 为 hash 伪造，TODO 接真实 API）
+│   │   ├── nodes.py           #     create_ticket_node（结构化归一化 → 真实落库）
+│   │   ├── repo.py            #     数据访问层：create/get/list/update_status + ticket_logs 审计
 │   │   ├── state.py           #     TicketState + TicketSchema（⚠️ Schema 在此，不在 schemas.py）
 │   │   └── schemas.py         #     仅 TICKET_STATUS_FLOW 状态机常量
-│   ├── after_sale/            #   备件与售后协调 Agent（桩实现）
-│   │   ├── graph.py           #     ⚠️ 仅 query_warranty→END 连通，order_part/tools 是死节点
-│   │   ├── nodes.py           #     query_warranty_node / order_part_node（桩数据 + TODO）
-│   │   ├── tools.py           #     @tool query_warranty / check_part_stock / create_appointment（桩）
+│   ├── after_sale/            #   备件与售后协调 Agent（保修查库 / 配件桩 / 预约落库）
+│   │   ├── graph.py           #     route_request_type → (query_warranty | order_part | prepare_appointment→tools)
+│   │   ├── nodes.py           #     route_request_type_node + query_warranty/order_part/prepare_appointment
+│   │   ├── tools.py           #     @tool query_warranty(查 devices 表) / check_part_stock(桩) / create_appointment(写库)
 │   │   ├── state.py           #     AfterSaleState + WarrantyInfo/PartOrder
 │   │   └── prompts.py
 │   ├── asset/                 #   设备台账 Agent（⬜ 规划中，Device 表已建）
@@ -89,13 +93,13 @@ backend/
 │   ├── logger.py              #   结构化日志（_Logger 包装，configure_logging 压噪）
 │   └── query_classifier.py    #   MiniLM general/specialized 二分类（⚠️ 未接入链路）
 ├── api/                       # 对外 API（挂载到 /api/v1）
-│   ├── router.py              #   路由聚合：auth / chat / knowledge / ticket
-│   ├── chat.py                #   统一对话 SSE 入口：规则拦截 + LLM 路由(6类) + 流式执行器
+│   ├── router.py              #   路由聚合：auth / chat / knowledge / ticket / diagnosis / after_sale
+│   ├── chat.py                #   统一对话 SSE 入口：规则拦截 + LLM 路由(6类) + 流式执行器（接 Supervisor）
 │   ├── auth.py                #   POST /login、GET /me（JWT）
 │   ├── knowledge.py           #   POST /knowledge/chat、/chat/stream、会话历史
-│   ├── ticket.py              #   工单创建/查询/列表（⚠️ 创建未写库，查询 501）
-│   ├── diagnosis.py           #   ⚠️ 空壳（仅 docstring，未注册）
-│   └── after_sale.py          #   ⚠️ 空壳（仅 docstring，未注册）
+│   ├── ticket.py              #   工单 CRUD + 状态机流转 + 审计日志（真实落库 PostgreSQL）
+│   ├── diagnosis.py           #   POST /diagnosis 非流式诊断（支持 interrupt 追问 + resume）
+│   └── after_sale.py          #   POST /after_sale 售后协调（保修/配件/预约）
 ├── db/                        # 数据库
 │   ├── models.py              #   User/Customer/Device/Ticket/TicketLog/Conversation/
 │   │                          #   KnowledgeDocument/AfterSaleAppointment（8 张表）
@@ -104,10 +108,12 @@ backend/
 │   ├── loader.py              #   load_pdf/markdown/docx/xlsx + load_document 分发
 │   ├── splitter.py            #   split_documents（PDF/MD 标题/DOCX 启发式/XLSX 每50行）
 │   ├── embedder.py            #   BGEMEmbedder 单例（encode 输出 dense+sparse）
+│   ├── writer.py              #   KnowledgeBaseClient：建 collection + 写入 Milvus（写端）
 │   ├── retriever.py           #   hybrid_retrieve(query, device_model, top_k) 模块级函数
 │   ├── reranker.py            #   BGEReranker 单例（rerank_with_confidence）
 │   └── contextual.py          #   Contextual RAG：LLM 生成定位描述拼到 chunk 前
-└── supervisor.py              # ⬜ Supervisor 主编排图（规划中，尚未实现）
+├── session_state.py           # 会话状态注册表（进程级，记录 pipeline 中断后的续跑标记）
+└── supervisor.py              # ✅ Supervisor 主编排服务类（run_*/stream_*，编排 4 个 Agent 图）
 
 data/                          # 知识库数据文件（不要直接修改，走脚本/后台）
 ├── diag_tree_full.yaml        #   诊断树 245 节点（D001-D013 手工 + D101-D334 自动转换）
@@ -115,8 +121,8 @@ data/                          # 知识库数据文件（不要直接修改，�
 
 deploy/                        # docker-compose / Dockerfile / nginx.conf / .env.example
 docs/                          # architecture.md / api.md / deployment.md / diagnosis-flow.html
-scripts/                       # build_knowledge_base / migrate / demo_diagnosis / evaluate 等
-tests/                         # test_diagnosis.py（40+ 用例）等
+scripts/                       # migrate / seed_dev_data / demo_diagnosis / build_knowledge_base / evaluate 等
+tests/                         # test_diagnosis.py（50+ 用例）等
 ```
 
 ## Agent 图结构说明
@@ -141,7 +147,7 @@ tests/                         # test_diagnosis.py（40+ 用例）等
            [End / 转人工]
 ```
 
-**当前实现**：各 Agent 的 LangGraph 图已独立实现（`build_*_graph()`），但**没有 Supervisor 主编排层把它们串起来**。`api/chat.py` 目前用「规则拦截 + LLM 路由 + 流式执行器（占位实现，直接调 LLM 未调 Agent Graph）」代替主编排，多处 `TODO: 接入 Supervisor`。
+**当前实现**：各 Agent 的 LangGraph 图已独立实现（`build_*_graph()`），并由 `backend/supervisor.py`（服务类，非巨型 StateGraph）编排。`api/chat.py` 的 4 个流式执行器已接入各 Agent Graph（`astream updates/values`），pipeline 模式串联诊断 → 工单 → 售后。诊断 interrupt 追问通过 `thread_id=session_id` + `graph.get_state(config).next` 检测 + `Command(resume=...)` 恢复。
 
 ### 每个 Agent 内部节点模式
 
@@ -177,34 +183,37 @@ def build_diagnosis_graph():
 
 | 模块 | 状态 | 说明 |
 |---|---|---|
-| 统一对话入口（SSE） | ✅ 已实现 | 规则拦截 + LLM 路由（6 类意图）→ 分发流式执行器 |
+| 统一对话入口（SSE） | ✅ 已实现 | 规则拦截 + LLM 路由（6 类意图）→ Supervisor 分发流式执行器（接 Agent Graph） |
 | 故障诊断 Agent | ✅ 完整闭环 | 9 节点 LangGraph + 追问循环 + 245 节点诊断树 + 置信度/转人工 + 离线 demo |
-| 知识库 RAG 管线 | ✅ 已实现 | 加载/分块/BGE-M3 嵌入/Milvus 混合检索/BGE 精排/Contextual RAG |
+| 知识库 RAG 管线 | ✅ 完整闭环 | 加载/分块/BGE-M3 嵌入/Milvus 写入+混合检索/BGE 精排/Contextual RAG，示例库 `CNC-1000` 已建（14 chunk） |
 | 知识库 Agent | ✅ 已实现 | retrieve → generate，结构化输出 |
 | 数据库层 | ✅ 已实现 | 8 张表 ORM + 幂等迁移 + 工单审计日志 |
-| 工单管理 Agent | 🟡 半实现 | 结构化生成可用，真实工单 API 待接入 |
-| 售后协调 Agent | 🟡 半实现 | 保修/备件/预约工具为桩，待对接 ERP/WMS |
+| 工单管理 Agent | ✅ 已实现 | 结构化生成 + 真实落库（tickets）+ 状态机流转 + ticket_logs 审计 |
+| 售后协调 Agent | ✅ 已实现 | 保修查 devices 表 / 配件桩 / 预约写 after_sale_appointments；图拓扑修复 |
+| 工单 API | ✅ 已实现 | POST/GET/PATCH 全套 + JWT 鉴权 + 状态机校验（非法流转 400） |
+| 故障诊断 API | ✅ 已实现 | POST /diagnosis 非流式 + interrupt 追问 + resume |
+| 售后 API | ✅ 已实现 | POST /after_sale 保修/配件/预约 |
 | 意图识别 | 🟡 散落实现 | 规则 + LLM 路由已工作；独立 Agent 目录与 MiniLM 分类器待接入 |
 | 设备台账 Agent | ⬜ 规划中 | Device 表已建，Agent 待实现 |
-| 点检巡检 Agent | ⬜ 规划中 | 参考宝信 AI 点巡检智能体 |
-| Supervisor 主编排 | ⬜ 规划中 | 各 Agent 图已独立，待串成主编排图 |
+| 点检巡检 Agent | ⬜ 规划中 | 对标 AI 点巡检智能体 |
+| Supervisor 主编排 | ✅ 已实现 | `backend/supervisor.py` 服务类：run_*/stream_*，pipeline 串联诊断→工单→售后 |
 
-## 当前已知问题与迁移待办（务必对照）
+## 当前已知问题与待办（务必对照）
 
-以下是迁移代码时发现的**失实文档与已知缺陷**，修改代码前先确认这些状态：
+以下是**当前已知缺陷与待办**，修改代码前先确认这些状态：
 
 1. **`backend/agents/intent/` 目录不存在**。意图路由散落在 `api/chat.py` + `core/query_classifier.py`。若要做独立意图 Agent，需新建该目录。
-2. **`backend/supervisor.py` 不存在**。`chat.py` 里的 `TODO: 接入 Supervisor` 是目标，不是现状。
+2. **`backend/supervisor.py` 已实现**（服务类，非巨型 StateGraph）。`chat.py` 已接入 Supervisor。✅
 3. **`backend/core/config.py` 与 `backend/core/console.py` 不存在**。配置在 `backend/config.py`；无 console 模块。
-4. **`backend/api/admin.py` 不存在**（router.py 中已注释掉）。`backend/api/diagnosis.py`、`after_sale.py` 是空壳。
+4. **`backend/api/admin.py` 不存在**（router.py 中已注释掉）。`backend/api/diagnosis.py`、`after_sale.py` **已补齐**（非空壳）。✅
 5. **`backend/db/session.py` 不存在**。会话管理在 `dependencies.py` 的 `get_db`。
 6. **`backend/prompts/` 目录不存在**。Prompt 在各 Agent 目录下的 `prompts.py`。
-7. **工单状态机定义不一致**，三处不同：`ticket/schemas.py`（pending→dispatched→processing→completed→closed）、`ticket/state.py`（同 schemas）、`db/models.py`（pending/processing/waiting_parts/resolved/closed）。统一前新增状态相关代码需注意。
-8. **Milvus 写入端（`KnowledgeBaseClient`）未实现**。`scripts/build_knowledge_base.py` 到嵌入为止，无法真正写入向量库。
-9. **`knowledge_base/contextual.py` 调 `get_llm("qa", ...)` 会抛 ValueError**——`_AGENT_MODEL_ROUTING` 中没有 `"qa"` 键（应为 `"knowledge"`）。
-10. **`api/knowledge.py` 用 `KnowledgeBaseRetriever().hybrid_retrieve(...)` 实例调用**，但 `hybrid_retrieve` 是模块级函数，会抛 AttributeError（被吞掉后降级为空检索）。正确用法见 `agents/knowledge/nodes.py`。
-11. **工单创建未写库**（ticket_id 用 hash 伪造），售后工具为桩数据。对接 ERP/CRM/WMS 时所有外部调用必须设超时（默认 10 秒）并走降级路径。
-12. **`tests/` 中除 `test_diagnosis.py` 外均为占位**（`assert True`）。补测试时以诊断线的 40+ 用例为质量标准。
+7. **工单状态机**已统一为 `pending→dispatched→processing→waiting_parts→resolved→closed`（`ticket/schemas.py` TICKET_STATUS_FLOW 为权威定义，`state.py`/`db/models.py` 已对齐）。✅
+8. **Milvus 写入端已实现**（`backend/knowledge_base/writer.py` 的 `KnowledgeBaseClient`）。`scripts/build_knowledge_base.py` 已完成四步闭环，示例建库：`python scripts/build_knowledge_base.py data/knowledge_sample.md --course-id CNC-1000 --no-context`。✅
+9. **`knowledge_base/contextual.py` 调 `get_llm("qa", ...)`** —— 已改为 `"knowledge"`（`_AGENT_MODEL_ROUTING` 有该键）。✅
+10. **`api/knowledge.py` 用 `KnowledgeBaseRetriever().hybrid_retrieve(...)` 实例调用** —— 已改为模块级调用。✅
+11. **工单创建已真实落库**（ticket_id `TK-YYYYMMDD-XXXXXX` 顺序号，消除 hash 随机化 bug）+ `ticket_logs` 审计。售后保修查 `devices` 表、预约写 `after_sale_appointments` 表；`check_part_stock` 仍为桩（无备件表）。
+12. **`tests/` 已补齐**：`test_ticket`/`test_after_sale`/`test_supervisor`/`test_knowledge`/`test_intent` 均为真实用例（106 个总用例），离线可跑（FakeLLM/mock DB）。
 13. **`scripts/seed_knowledge.py`、`scripts/evaluate.py` 为纯占位**。
 
 ## 注意事项

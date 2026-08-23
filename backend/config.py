@@ -18,7 +18,7 @@ class Settings(BaseSettings):
 
     # ── 数据库（PostgreSQL）──
     db_host: str = "localhost"   # 主机；写了默认值 = 可选项
-    db_port: int = 5433          # 端口；本机 5432 已占用，隔离到 5433
+    db_port: int = 5432          # 端口；Docker compose 默认映射 5432
     db_name: str = "equipment_cs"    # 库名
     db_user: str                 # 用户名；没有默认值 = 必填，.env.local 缺了会启动报错
     db_password: str             # 密码；同样必填
@@ -34,7 +34,7 @@ class Settings(BaseSettings):
 
     # ── Milvus 向量库 ──
     milvus_host: str = "localhost"
-    milvus_port: int = 19531     # 本机 19530 已占用，隔离到 19531
+    milvus_port: int = 19530     # Docker compose 默认映射 19530
 
     # ── 大模型（DeepSeek）──
     deepseek_api_key: str                                  # 必填：DeepSeek 的 API Key

@@ -55,8 +55,8 @@ class LLMFactory:
     用 @classmethod 定义方法，意味着不用创建对象、直接用 LLMFactory.get_llm(...) 调用。
 
     用法：
-        llm = LLMFactory.get_llm("qa")                              # 普通模型
-        structured = LLMFactory.get_structured_llm("resume", 某Schema)  # 结构化输出模型
+        llm = LLMFactory.get_llm("knowledge")                       # 普通模型
+        structured = LLMFactory.get_structured_llm("knowledge", 某Schema)  # 结构化输出模型
         response = await llm.ainvoke(messages)
     """
 

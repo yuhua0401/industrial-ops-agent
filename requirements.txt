@@ -40,6 +40,7 @@ openpyxl==3.1.5                        # Excel 表格解析（知识库 .xlsx �
 # ===== 数据校验 / 配置 =====
 pydantic==2.11.4
 pydantic-settings==2.11.0              # 读取 .env.local
+pyyaml==6.0.2                          # 诊断树 YAML 解析（diag_tree.py / convert_examples_to_tree.py）
 
 # ===== 工具库 =====
 httpx==0.28.1                          # 异步 HTTP 客户端
