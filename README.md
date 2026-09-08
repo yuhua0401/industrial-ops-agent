@@ -2,6 +2,25 @@
 
 面向 **工业设备制造商与使用方** 的多 Agent 智能运维平台，面向钢铁/流程行业「设备全生命周期管理」的业务场景，用大模型智能体重塑设备运维的 **点检 → 诊断 → 报修 → 备件 → 售后** 全链路。
 
+## 界面预览
+
+零构建演示前端（`backend/static/`），服务启动后访问 http://localhost:8000/ 即可体验。
+以下截图由 `python scripts/take_screenshots.py` 对真实运行系统自动拍摄（Playwright + 系统 Edge 无头模式，真实 LLM 对话）：
+
+| 欢迎屏 · 预设问题 | JWT 登录 |
+|:---:|:---:|
+| ![欢迎屏](docs/images/welcome.png) | ![登录](docs/images/login.png) |
+
+| 知识问答（RAG + 来源引用） | 故障诊断（置信度 + 处理方案） |
+|:---:|:---:|
+| ![知识问答](docs/images/chat-knowledge.png) | ![故障诊断](docs/images/chat-diagnosis.png) |
+
+| 全流程报修（诊断 → 工单 → 售后） | 售后配件查询（parts 真查库） |
+|:---:|:---:|
+| ![全流程报修](docs/images/chat-pipeline.png) | ![售后配件](docs/images/chat-after-sale.png) |
+
+> 全流程报修一图包含：意图路由卡片 → Pipeline 三步时间线 → E002 诊断结论 → 工单号 TK-…落库 → 保修状态查询 → `diagnosis → ticket → after_sale` Agent 链。
+
 ## 为什么做这个
 
 传统设备运维存在三个痛点：
