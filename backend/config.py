@@ -86,6 +86,9 @@ class Settings(BaseSettings):
     log_level: str = "INFO"                    # 日志级别
     default_tenant_id: str = "tenant_default"  # 多租户默认值
 
+    # ── LangGraph checkpointer（诊断追问的暂停/恢复存储）──
+    checkpointer_backend: str = "memory"       # memory（默认，进程内）/ postgres（跨进程持久化）
+
     class Config:
         """Pydantic 的元配置：告诉 BaseSettings 该怎么读取配置。"""
         env_file = env_path          # 从这个文件读取配置

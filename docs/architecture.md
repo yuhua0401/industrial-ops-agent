@@ -6,12 +6,14 @@
 ┌─────────────────────────────────────────────────────────┐
 │                    客户触点层                              │
 │  企业微信 / 微信公众号 / Web 浮窗 / API 接入               │
+│  演示前端：backend/static/（零构建，SSE 聊天 + JWT 登录）   │
 └────────────────────────┬────────────────────────────────┘
                          │
 ┌────────────────────────▼────────────────────────────────┐
 │                    API 接入层                              │
-│         FastAPI /api/v1（chat / knowledge / tickets）      │
-│         （admin 管理后台规划中，尚未实现）                    │
+│  FastAPI /api/v1（chat / knowledge / tickets /            │
+│  diagnosis / after-sale / auth）+ SSE 流式                │
+│  （admin 管理后台规划中，尚未实现）                         │
 └────────────────────────┬────────────────────────────────┘
                          │
 ┌────────────────────────▼────────────────────────────────┐
@@ -29,7 +31,8 @@
                          │
 ┌────────────────────────▼────────────────────────────────┐
 │                   支撑层                                   │
-│  LLM工厂 │ Milvus │ PostgreSQL │ BGE-M3 │ Reranker       │
+│  LLM工厂 │ Milvus │ PostgreSQL(9表含parts) │ BGE-M3      │
+│  Checkpointer(memory|postgres 可切换) │ Reranker         │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -37,6 +40,8 @@
 > - **意图识别**当前为「规则拦截（`api/chat.py::_pre_filter`）+ LLM 路由（`_llm_route`）」两级实现，尚无独立 Agent 目录（`backend/agents/intent/` 规划中）。
 > - **工单 API** 前缀为 `/api/v1/tickets`（由 `api/router.py` 统一挂载，`ticket.py` 不再自带 `/api/tickets` 前缀）。
 > - **管理后台**（admin API + Vue 前端）为规划中能力，尚未实现。
+> - **售后配件查询**已落库：`parts` 备件表 + `check_part_stock` 真查库（在库/缺货/查无/DB 异常四态降级）。
+> - **诊断追问状态**：`CHECKPOINTER_BACKEND=memory|postgres` 可切换（postgres 不可用自动降级 memory）。
 
 ## Agent 协作流程
 

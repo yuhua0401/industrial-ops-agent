@@ -163,11 +163,10 @@ def _extract_phenomena(user_input: str) -> list[str]:
         if len(stem) < 2 or stem in _PHENOMENON_STOPWORDS:
             continue
         words.append(stem)
-    # 词典原子词补充（去重保序）
+    # 词典原子词优先占位（与诊断树节点现象词同源，模糊匹配命中率最高）；
+    # 碎片段落只补剩余槽位，避免长输入的整句碎片把原子词挤出截断边界
     atoms = _extract_atom_phenomena(user_input)
-    for a in atoms:
-        if a not in words:
-            words.append(a)
+    words = atoms + [w for w in words if w not in atoms]
     return words[:6]
 
 
@@ -221,10 +220,17 @@ def _extract_atom_phenomena(user_input: str) -> list[str]:
         if idx == -1:
             continue
         tail = p[idx + len(part): idx + len(part) + 12]
+        # 取 tail 中最早出现的故障词（按位置就近，而非词表顺序）：
+        # 否则"主轴不转了…过载报警"会按词表序先命中"报警"，误拼出"主轴报警"
+        best_fault = None
+        best_pos = len(tail)
         for fault in _FAULT_WORDS:
-            if fault in tail:
-                atoms.append(part + fault)
-                break
+            pos = tail.find(fault)
+            if pos != -1 and pos < best_pos:
+                best_pos = pos
+                best_fault = fault
+        if best_fault:
+            atoms.append(part + best_fault)
     for fault in _FAULT_WORDS:
         if fault in p:
             atoms.append(fault)

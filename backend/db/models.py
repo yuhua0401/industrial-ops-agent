@@ -165,6 +165,27 @@ class KnowledgeDocument(Base):
 
 
 # ═══════════════════════════════════════════════════════════════
+# 备件库存
+# ═══════════════════════════════════════════════════════════════
+
+class Part(Base):
+    """备件库存表（售后配件查询；后续可扩展 WMS 对接）。"""
+    __tablename__ = "parts"
+
+    id             = Column(Integer, primary_key=True, autoincrement=True)
+    part_no        = Column(String(64), unique=True, nullable=False, index=True)
+    name           = Column(String(128), nullable=False)
+    category       = Column(String(32), default="")           # 机械 / 电气 / 润滑 / 耗材
+    stock_qty      = Column(Integer, default=0)
+    lead_time_days = Column(Integer, default=7)               # 补货/发货周期（天）
+    price          = Column(Float, default=0.0)
+    device_models  = Column(String(256), default="")          # 适用设备型号（逗号分隔）
+    tenant_id      = Column(String(64), nullable=False, default="tenant_default")
+    created_at     = Column(DateTime, default=datetime.now)
+    updated_at     = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+
+# ═══════════════════════════════════════════════════════════════
 # 售后预约
 # ═══════════════════════════════════════════════════════════════
 

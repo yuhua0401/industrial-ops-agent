@@ -92,16 +92,46 @@ def build_diagnosis_graph():
     return builder.compile(checkpointer=checkpointer)
 
 
-# 进程级 MemorySaver 单例：保证同一进程内所有 build_diagnosis_graph() 复用同一
+# 进程级 checkpointer 单例：保证同一进程内所有 build_diagnosis_graph() 复用同一
 # checkpoint 存储，追问循环的暂停/恢复跨请求成立。
-_checkpointer: MemorySaver | None = None
+# 通过 .env.local 的 CHECKPOINTER_BACKEND 切换：
+#   memory（默认，进程内）| postgres（AsyncPostgresSaver，跨进程/重启持久化）
+_checkpointer = None
 
 
-def _get_checkpointer() -> MemorySaver:
+def _get_checkpointer():
     global _checkpointer
-    if _checkpointer is None:
-        _checkpointer = MemorySaver()
+    if _checkpointer is not None:
+        return _checkpointer
+
+    from backend.config import get_settings
+    if get_settings().checkpointer_backend.lower() == "postgres":
+        try:
+            import asyncio
+
+            from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+
+            saver = AsyncPostgresSaver.from_conn_string(_pg_conn_string())
+            # AsyncPostgresSaver 需异步 setup 建表；构建图发生在同步上下文，
+            # 用一次性事件循环完成初始化
+            asyncio.new_event_loop().run_until_complete(saver.setup())
+            _checkpointer = saver
+            return _checkpointer
+        except Exception as e:
+            # PG 不可用/依赖缺失时降级 memory 并告警，不阻断图构建
+            from backend.core.logger import get_logger
+            get_logger(__name__).warning(
+                "diagnosis.postgres_checkpointer_failed_fallback_memory", error=str(e))
+
+    _checkpointer = MemorySaver()
     return _checkpointer
+
+
+def _pg_conn_string() -> str:
+    """从配置拼 PostgreSQL 连接串（与 settings.database_url 同源字段）。"""
+    from backend.config import get_settings
+    s = get_settings()
+    return f"postgresql://{s.db_user}:{s.db_password}@{s.db_host}:{s.db_port}/{s.db_name}"
 
 
 # ──────────────────────────────────────────────────────────────

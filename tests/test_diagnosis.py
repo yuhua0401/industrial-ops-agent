@@ -192,6 +192,22 @@ def test_extract_phenomena_empty():
     assert nodes._extract_phenomena(None) == []
 
 
+def test_extract_phenomena_atoms_survive_long_input():
+    """回归：长输入的碎片段落不得把词典原子词挤出 6 个槽位。
+
+    原子词（如 '主轴不转'）与诊断树节点现象词同源，若被碎片挤掉，
+    模糊匹配轨将整体失效（只能落 LLM 兜底轨）。
+    """
+    long_input = (
+        "今天早上车间开机之后操作人员反映这台机床的主轴不转了，"
+        "而且过载报警一直响个不停，另外冷却液也时有时无，请帮忙看看"
+    )
+    words = nodes._extract_phenomena(long_input)
+    assert "主轴不转" in words, f"原子词被碎片挤出: {words}"
+    # 原子词应排在碎片段落之前
+    assert words.index("主轴不转") < len(words) - 1 or len(words) == 1
+
+
 # ──────────────────────────────────────────────────────────────
 # nodes 纯函数：三轨匹配
 # ──────────────────────────────────────────────────────────────

@@ -4,6 +4,8 @@ nodes - 售后协调 Agent 的节点函数
 通过 Tool Calling 调用外部系统 API 完成各类售后操作。
 拓扑：route_request_type → (query_warranty | order_part | prepare_appointment → tools)
 """
+import re
+
 from langchain_core.messages import AIMessage, HumanMessage
 
 from backend.agents.after_sale.state import AfterSaleState
@@ -84,9 +86,19 @@ async def route_request_type_node(state: AfterSaleState) -> dict:
 # 节点：保修查询 / 配件订购 / 预约准备
 # ──────────────────────────────────────────────────────────────
 
+# 设备序列号模式：SN-AC-0001 等（SN- 开头，允许多段连字符字母数字）
+_SN_RE = re.compile(r"\bSN-[A-Z0-9]+(?:-[A-Z0-9]+)*\b", re.IGNORECASE)
+
+
+def _extract_device_sn(text: str) -> str:
+    """从消息中提取设备序列号（如 SN-AC-0001），未命中返回空串。"""
+    m = _SN_RE.search(text or "")
+    return m.group(0).upper() if m else ""
+
+
 async def query_warranty_node(state: AfterSaleState) -> dict:
     """节点：查询保修信息（devices 表）。"""
-    device_sn = state.get("device_sn", "")
+    device_sn = state.get("device_sn", "") or _extract_device_sn(state.get("message", ""))
     if not device_sn:
         return {"warranty_info": {"status": "unknown", "error": "缺少设备序列号"}}
 
@@ -95,15 +107,32 @@ async def query_warranty_node(state: AfterSaleState) -> dict:
     return {"warranty_info": info}
 
 
+# 配件编号模式：字母开头 + 数字/连字符组合（如 BRG-6204、VFD-7K5、ENCDR20）
+_PART_NO_RE = re.compile(r"\b[A-Z]{2,6}[-]?\d[A-Z0-9]{1,9}\b")
+
+
+def _extract_part_no(text: str) -> str:
+    """从消息中提取配件编号（大小写不敏感，命中多个取第一个）。"""
+    m = _PART_NO_RE.search((text or "").upper())
+    return m.group(0) if m else ""
+
+
 async def order_part_node(state: AfterSaleState) -> dict:
-    """节点：配件订购（备件表未建，走 check_part_stock 桩查询）。"""
+    """节点：配件订购（check_part_stock 查 parts 表真实库存）。"""
     part = state.get("part_order", {}) or {}
+    # part_order 由上游显式传入（如 pipeline），否则从用户消息提取配件编号
+    part_no = part.get("part_no") or _extract_part_no(state.get("message", ""))
+    if not part_no:
+        return {"part_order": {
+            **part,
+            "stock_info": "请在问题中提供配件编号（如 BRG-6204），或联系人工客服查询库存。",
+        }}
     try:
-        stock_text = await check_part_stock.ainvoke({"part_no": part.get("part_no", "未知配件")})
+        stock_text = await check_part_stock.ainvoke({"part_no": part_no})
     except Exception as e:
-        logger.warning("after_sale.part_stock_failed", error=str(e))
+        logger.warning("after_sale.part_stock_failed", part_no=part_no, error=str(e))
         stock_text = "配件库存查询暂时不可用"
-    return {"part_order": {**part, "stock_info": stock_text}}
+    return {"part_order": {**part, "part_no": part_no, "stock_info": stock_text}}
 
 
 async def prepare_appointment_node(state: AfterSaleState) -> dict:

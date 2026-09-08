@@ -2,7 +2,7 @@
 tools - 售后协调 Agent 的 Tool 定义
 
 用于 LangChain Tool Calling，LLM 根据客户需求调用对应的工具。
-保修查询与预约创建接 PostgreSQL 真实数据；备件库存暂为桩（无备件表）。
+保修查询、备件库存与预约创建均接 PostgreSQL 真实数据。
 """
 from datetime import datetime
 
@@ -10,7 +10,7 @@ from langchain_core.tools import tool
 from sqlalchemy import select
 
 from backend.core.logger import get_logger
-from backend.db.models import AfterSaleAppointment, Device
+from backend.db.models import AfterSaleAppointment, Device, Part
 
 logger = get_logger(__name__)
 
@@ -69,6 +69,37 @@ async def query_warranty_from_db(device_sn: str) -> dict:
         "warranty_end":    warranty_end.strftime("%Y-%m-%d") if warranty_end else "",
         "status":          status,
         "coverage":        "整机保修",
+    }
+
+
+async def query_part_stock_from_db(part_no: str) -> dict:
+    """查询备件库存（parts 表）。
+
+    返回 {status: in_stock/out_of_stock/not_found/unknown, part_no, name,
+    stock_qty, lead_time_days, price, device_models}；
+    DB 异常或查无此件**不抛异常**（保持售后降级语义）。
+    """
+    code = (part_no or "").strip().upper()
+    try:
+        async with _get_session_factory()() as session:
+            stmt = select(Part).where(Part.part_no == code)
+            result = await session.execute(stmt)
+            part = result.scalar_one_or_none()
+    except Exception as e:
+        logger.warning("after_sale.part_db_error", part_no=code, error=str(e))
+        return {"status": "unknown", "error": "配件库存查询服务暂不可用"}
+
+    if part is None:
+        return {"status": "not_found", "error": f"未找到配件 {code} 的库存档案"}
+
+    return {
+        "status": "in_stock" if part.stock_qty > 0 else "out_of_stock",
+        "part_no": part.part_no,
+        "name": part.name,
+        "stock_qty": part.stock_qty,
+        "lead_time_days": part.lead_time_days,
+        "price": part.price,
+        "device_models": part.device_models,
     }
 
 
@@ -154,10 +185,27 @@ async def query_warranty(device_sn: str) -> str:
 
 
 @tool
-def check_part_stock(part_no: str) -> str:
+async def check_part_stock(part_no: str) -> str:
     """查询配件库存。传入配件编号，返回库存数量和预计发货时间。"""
-    # TODO: 对接 WMS 系统（备件表尚未建立）
-    return f"配件 {part_no} 库存：10 件，预计发货：3-5 个工作日"
+    info = await query_part_stock_from_db(part_no)
+    if info["status"] == "unknown":
+        return f"配件 {part_no}：{info.get('error', '配件库存查询失败')}"
+
+    if info["status"] == "not_found":
+        return f"未找到配件 {part_no} 的库存档案，请核对配件编号后重试。"
+
+    name = info["name"]
+    qty = info["stock_qty"]
+    lead = info["lead_time_days"]
+    if info["status"] == "out_of_stock":
+        return (
+            f"配件 {name}（{part_no}）当前缺货，补货周期约 {lead} 天，"
+            f"可先创建上门服务预约或联系人工客服。"
+        )
+    price_text = f"，单价 {info['price']:.2f} 元" if info.get("price") else ""
+    return (
+        f"配件 {name}（{part_no}）库存 {qty} 件，预计 {lead} 天内发货{price_text}。"
+    )
 
 
 @tool

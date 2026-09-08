@@ -99,3 +99,15 @@ app.include_router(api_router, prefix="/api/v1")
 @app.get("/health", tags=["系统"])
 async def health_check():
     return {"status": "ok", "env": settings.app_env}
+
+
+# ── 演示前端（零构建静态页）─────────────────────────────────────
+# 挂载在最后：/api/v1、/docs、/health 等已注册路由优先匹配，
+# 其余路径回落到 static 目录（html=True 时 "/" 返回 index.html）。
+from pathlib import Path  # noqa: E402
+
+from fastapi.staticfiles import StaticFiles  # noqa: E402
+
+_static_dir = Path(__file__).resolve().parent / "static"
+if _static_dir.is_dir():
+    app.mount("/", StaticFiles(directory=str(_static_dir), html=True), name="static")

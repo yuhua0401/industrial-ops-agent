@@ -104,7 +104,7 @@ backend/
 │   ├── knowledge/          #   运维知识库 Agent（RAG）
 │   ├── diagnosis/          #   故障诊断 Agent（诊断树 + 追问循环）
 │   ├── ticket/             #   工单管理 Agent（真实落库 + 审计）
-│   └── after_sale/         #   备件与售后协调 Agent（保修/配件/预约）
+│   └── after_sale/         #   备件与售后协调 Agent（保修/配件/预约，parts 表真查库）
 ├── core/                   # 核心基础设施
 │   ├── llm_factory.py      #   LLM 工厂（按 Agent 路由 / 结构化输出 / 缓存）
 │   ├── retry.py            #   重试与降级（retry → fallback → raise）
@@ -112,17 +112,18 @@ backend/
 │   ├── logger.py           #   结构化日志
 │   └── query_classifier.py #   MiniLM 意图分类器
 ├── api/                    # 对外 API（chat / knowledge / ticket / diagnosis / after_sale）
-├── db/                     # 数据库（models / migrations）
+├── db/                     # 数据库（models / migrations，9 张表含 parts 备件表）
 ├── knowledge_base/         # RAG 管线（loader/splitter/embedder/writer/retriever/reranker）
+├── static/                 # 演示前端（零构建：index.html + SSE 聊天 + JWT 登录）
 ├── session_state.py        # 会话状态注册表（pipeline 中断续跑）
 ├── supervisor.py           # Supervisor 主编排服务类
-└── main.py                 # FastAPI 入口
+└── main.py                 # FastAPI 入口（挂载 API + 静态演示页）
 
 data/                       # 知识库数据（诊断树 / 维修实例 / 知识库样本，脱敏）
 deploy/                     # docker-compose / Dockerfile / nginx / .env.example
 docs/                       # 架构 / API / 部署文档
-scripts/                    # 建库 / 数据库初始化 / 种子数据 / 评估 / 演示
-tests/                      # 测试
+scripts/                    # 建库 / 数据库初始化 / 种子数据 / 评估 / 预检 / 演示
+tests/                      # 测试（114 用例，离线可跑）
 ```
 
 ## 快速开始
@@ -140,16 +141,21 @@ docker compose -f deploy/docker-compose.yml up -d
 # 4. 初始化数据库（建表 + 索引）
 python scripts/migrate.py
 
-# 5. 写入开发种子数据（用户 / 客户 / 设备，幂等）
+# 5. 写入开发种子数据（用户 / 客户 / 设备 / 备件，幂等）
 python scripts/seed_dev_data.py
 
 # 6. 构建知识库（可选，将设备手册写入 Milvus 向量库）
 python scripts/build_knowledge_base.py data/knowledge_sample.md --course-id CNC-1000 --no-context
+#    或一键种子：python scripts/seed_knowledge.py
 
-# 7. 启动服务
+# 7. 演示环境预检（一条命令检查 Docker/PG/Milvus/种子数据/LLM 配置）
+python scripts/preflight_check.py
+
+# 8. 启动服务
 python -X utf8 -m uvicorn backend.main:app --reload --port 8000
 ```
 
+- **演示页面**：http://localhost:8000/ （零构建静态前端：登录 + SSE 对话，路由卡片/进度/追问/Pipeline 全事件渲染）
 - API 文档：http://localhost:8000/docs
 - 健康检查：http://localhost:8000/health
 - 种子账号：`engineer / admin123`、`customer / admin123`
@@ -157,6 +163,9 @@ python -X utf8 -m uvicorn backend.main:app --reload --port 8000
 ```bash
 # 测试
 pytest tests/ -v
+
+# 诊断树匹配层离线评估（改词表/阈值/停用词后必跑，零 LLM 依赖）
+python scripts/evaluate.py
 
 # 故障诊断离线演示（无需 API Key）
 python scripts/demo_diagnosis.py

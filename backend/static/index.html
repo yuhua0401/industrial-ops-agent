@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>设备智能服务助手 · Multi-Agent 控制台</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ══════════ 顶栏 ══════════ -->
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </span>
+    <span class="brand-name">设备智能服务助手</span>
+    <span class="brand-tag">Multi-Agent</span>
+    <span class="status-pill"><i class="status-dot"></i>在线</span>
+  </div>
+  <div class="user-box" id="userBox">
+    <button class="btn btn-ghost" id="loginBtn">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
+      登录
+    </button>
+    <span class="user-info hidden" id="userInfo">
+      <span class="user-avatar" id="userAvatar">工</span>
+      <span class="user-meta">
+        <span id="userName">-</span>
+        <span class="user-role" id="userRole">-</span>
+      </span>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn">退出</button>
+    </span>
+  </div>
+</header>
+
+<main class="layout">
+
+  <!-- ══════════ 侧栏 ══════════ -->
+  <aside class="sidebar">
+    <section class="side-card">
+      <h3>
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/></svg>
+        设备上下文 <span class="hint">诊断 / 售后更准</span>
+      </h3>
+      <label class="field">
+        <span>设备型号</span>
+        <input type="text" id="deviceModel" placeholder="如 CNC-1000" value="CNC-1000">
+      </label>
+      <label class="field">
+        <span>设备序列号</span>
+        <input type="text" id="deviceSn" placeholder="如 SN-AC-0001">
+      </label>
+    </section>
+
+    <section class="side-card">
+      <h3>
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        快捷场景
+      </h3>
+      <div class="scene-list">
+        <button class="scene-btn" data-msg="你好">
+          <span class="scene-emoji">👋</span><span class="scene-text">打招呼<small>规则拦截 · 零 Token</small></span>
+          <svg class="scene-arrow" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <button class="scene-btn" data-msg="CNC-1000 的主轴应该怎么保养？">
+          <span class="scene-emoji">📚</span><span class="scene-text">知识问答<small>RAG 检索增强</small></span>
+          <svg class="scene-arrow" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <button class="scene-btn" data-msg="设备报E001，电机不转还发热，过载报警一直响">
+          <span class="scene-emoji">🔧</span><span class="scene-text">故障诊断<small>诊断树 + 置信度</small></span>
+          <svg class="scene-arrow" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <button class="scene-btn scene-accent" data-msg="设备报E002错误，变频器过流报警，启动就跳闸，需要报修并处理">
+          <span class="scene-emoji">🚑</span><span class="scene-text">全流程报修<small>诊断 → 工单 → 售后</small></span>
+          <svg class="scene-arrow" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <button class="scene-btn" data-msg="帮我查一下 SN-AC-0001 这台设备还在保修期内吗？">
+          <span class="scene-emoji">🛡</span><span class="scene-text">查保修<small>devices 表真查库</small></span>
+          <svg class="scene-arrow" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <button class="scene-btn" data-msg="主轴轴承 BRG-6204 还有库存吗？">
+          <span class="scene-emoji">📦</span><span class="scene-text">查配件<small>parts 库存四态</small></span>
+          <svg class="scene-arrow" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <button class="scene-btn" data-msg="主轴运行时有异响，加工精度也变差了，帮我看看什么问题">
+          <span class="scene-emoji">🔍</span><span class="scene-text">多轮追问<small>低置信度触发补充</small></span>
+          <svg class="scene-arrow" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <button class="scene-btn" data-msg="帮我查一下工单 TK-20260908-000001 的处理进度">
+          <span class="scene-emoji">📋</span><span class="scene-text">查工单进度<small>工单号正则识别</small></span>
+          <svg class="scene-arrow" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <section class="side-card">
+      <h3>
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        会话
+      </h3>
+      <button class="btn btn-outline btn-block" id="newSessionBtn">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        开始新会话
+      </button>
+      <p class="session-id">session <code id="sessionIdText">-</code></p>
+      <p class="hint">同一会话内，诊断追问自动续接</p>
+    </section>
+
+    <section class="side-card agent-legend">
+      <h3>
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        Agent 分工
+      </h3>
+      <ul>
+        <li><i class="dot d-k"></i>产品知识问答 <span>RAG</span></li>
+        <li><i class="dot d-d"></i>故障诊断 <span>诊断树</span></li>
+        <li><i class="dot d-t"></i>工单管理 <span>落库</span></li>
+        <li><i class="dot d-a"></i>售后协调 <span>ToolCall</span></li>
+      </ul>
+    </section>
+  </aside>
+
+  <!-- ══════════ 对话区 ══════════ -->
+  <section class="chat-panel">
+    <div class="chat-window" id="chatWindow">
+      <div class="welcome">
+        <div class="welcome-logo">
+          <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </div>
+        <h2>设备智能服务助手</h2>
+        <p class="welcome-sub">知识问答 · 故障诊断 · 工单管理 · 售后协调 —— 一句话直达全链路</p>
+        <div class="welcome-chips">
+          <span class="chip"><i class="dot d-k"></i>RAG 混合检索</span>
+          <span class="chip"><i class="dot d-d"></i>245 节点诊断树</span>
+          <span class="chip"><i class="dot d-t"></i>工单真实落库</span>
+          <span class="chip"><i class="dot d-a"></i>多轮追问</span>
+        </div>
+
+        <div class="preset-title">试着问问看</div>
+        <div class="preset-grid">
+          <button class="q-btn" data-msg="CNC-1000 的主轴应该怎么保养？">
+            <span class="q-emoji">📚</span>CNC-1000 的主轴怎么保养？
+          </button>
+          <button class="q-btn" data-msg="设备报E001，电机不转还发热，过载报警一直响">
+            <span class="q-emoji">🔧</span>报 E001，电机不转还发热
+          </button>
+          <button class="q-btn" data-msg="主轴运行时有异响，加工精度也变差了，帮我看看什么问题">
+            <span class="q-emoji">🔍</span>主轴异响，精度变差了
+          </button>
+          <button class="q-btn q-accent" data-msg="设备报E002错误，变频器过流报警，启动就跳闸，需要报修并处理">
+            <span class="q-emoji">🚑</span>E002 报修全流程
+          </button>
+          <button class="q-btn" data-msg="帮我查一下 SN-AC-0001 这台设备还在保修期内吗？">
+            <span class="q-emoji">🛡</span>SN-AC-0001 在保修期吗？
+          </button>
+          <button class="q-btn" data-msg="主轴轴承 BRG-6204 还有库存吗？">
+            <span class="q-emoji">📦</span>轴承 BRG-6204 有货吗？
+          </button>
+        </div>
+        <p class="hint">点击问题立即体验，或在下方输入框描述您的问题</p>
+      </div>
+    </div>
+
+    <div class="input-bar">
+      <div class="input-shell">
+        <textarea id="msgInput" rows="1"
+          placeholder="描述设备问题，例如：设备报 E001，电机不转还发热…"></textarea>
+      </div>
+      <button class="btn btn-icon send-btn" id="sendBtn" title="发送 (Enter)">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+      </button>
+      <button class="btn btn-icon stop-btn hidden" id="stopBtn" title="停止">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+      </button>
+    </div>
+  </section>
+</main>
+
+<!-- ══════════ 登录弹窗 ══════════ -->
+<div class="modal-mask hidden" id="loginModal">
+  <div class="modal">
+    <h3>登录控制台 <span class="hint">JWT 鉴权演示</span></h3>
+    <label class="field">
+      <span>用户名</span>
+      <input type="text" id="loginUsername" placeholder="engineer / customer" value="engineer" autocomplete="username">
+    </label>
+    <label class="field">
+      <span>密码</span>
+      <input type="password" id="loginPassword" placeholder="admin123" value="admin123" autocomplete="current-password">
+    </label>
+    <p class="form-error hidden" id="loginError"></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="loginCancelBtn">取消</button>
+      <button class="btn btn-primary" id="loginSubmitBtn">登录</button>
+    </div>
+    <p class="hint">演示账号：engineer / admin123（工程师）· customer / admin123（客户）</p>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>

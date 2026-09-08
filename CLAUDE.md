@@ -81,7 +81,7 @@ backend/
 │   ├── after_sale/            #   备件与售后协调 Agent（保修查库 / 配件桩 / 预约落库）
 │   │   ├── graph.py           #     route_request_type → (query_warranty | order_part | prepare_appointment→tools)
 │   │   ├── nodes.py           #     route_request_type_node + query_warranty/order_part/prepare_appointment
-│   │   ├── tools.py           #     @tool query_warranty(查 devices 表) / check_part_stock(桩) / create_appointment(写库)
+│   │   ├── tools.py           #     @tool query_warranty(查 devices 表) / check_part_stock(查 parts 表) / create_appointment(写库)
 │   │   ├── state.py           #     AfterSaleState + WarrantyInfo/PartOrder
 │   │   └── prompts.py
 │   ├── asset/                 #   设备台账 Agent（⬜ 规划中，Device 表已建）
@@ -212,15 +212,20 @@ def build_diagnosis_graph():
 8. **Milvus 写入端已实现**（`backend/knowledge_base/writer.py` 的 `KnowledgeBaseClient`）。`scripts/build_knowledge_base.py` 已完成四步闭环，示例建库：`python scripts/build_knowledge_base.py data/knowledge_sample.md --course-id CNC-1000 --no-context`。✅
 9. **`knowledge_base/contextual.py` 调 `get_llm("qa", ...)`** —— 已改为 `"knowledge"`（`_AGENT_MODEL_ROUTING` 有该键）。✅
 10. **`api/knowledge.py` 用 `KnowledgeBaseRetriever().hybrid_retrieve(...)` 实例调用** —— 已改为模块级调用。✅
-11. **工单创建已真实落库**（ticket_id `TK-YYYYMMDD-XXXXXX` 顺序号，消除 hash 随机化 bug）+ `ticket_logs` 审计。售后保修查 `devices` 表、预约写 `after_sale_appointments` 表；`check_part_stock` 仍为桩（无备件表）。
-12. **`tests/` 已补齐**：`test_ticket`/`test_after_sale`/`test_supervisor`/`test_knowledge`/`test_intent` 均为真实用例（106 个总用例），离线可跑（FakeLLM/mock DB）。
-13. **`scripts/seed_knowledge.py`、`scripts/evaluate.py` 为纯占位**。
+11. **工单创建已真实落库**（ticket_id `TK-YYYYMMDD-XXXXXX` 顺序号，消除 hash 随机化 bug）+ `ticket_logs` 审计。售后保修查 `devices` 表、预约写 `after_sale_appointments` 表；`check_part_stock` 已接 `parts` 备件表真查库（`query_part_stock_from_db`，含在库/缺货/查无/DB 异常四态）。✅
+12. **`tests/` 已补齐**：`test_ticket`/`test_after_sale`/`test_supervisor`/`test_knowledge`/`test_intent` 均为真实用例（114 个总用例），离线可跑（FakeLLM/mock DB）。
+13. **`scripts/seed_knowledge.py`、`scripts/evaluate.py` 已实装**。✅
+    - `seed_knowledge.py`：委托 build_knowledge_base 四步流水线（默认 knowledge_sample.md → CNC-1000）。
+    - `evaluate.py`：诊断树匹配层离线评估（examples ↔ 转换节点 roundtrip，零 LLM 依赖）；改现象词表/阈值/停用词后必跑。
+    - `preflight_check.py`：演示环境预检（Docker/PG 表/种子数据/Milvus collection/LLM Key）。
+14. **演示前端已上线**：`backend/static/`（零构建），`main.py` 挂载 `/`，SSE 全事件渲染 + JWT 登录。
+15. **Checkpointer 可切换**：`CHECKPOINTER_BACKEND=memory|postgres`（`diagnosis/graph.py::_get_checkpointer`，postgres 不可用时自动降级 memory 并告警）。
 
 ## 注意事项
 
 - 不要直接修改 `data/` 下的知识库数据文件（`diag_tree_full.yaml` / `diag_examples.json`），应通过 `scripts/` 下脚本或管理后台操作。
 - 新增 Agent 时：先在 `docs/architecture.md` 更新架构图，遵循已有 State / Node / Graph / Prompt 四层结构，并在 `core/llm_factory.py` 的 `_AGENT_MODEL_ROUTING` 注册模型路由。
-- LLM Prompt 修改后，务必在测试集上跑评估（`scripts/evaluate.py` 当前为占位，需先实现），确认准确率没有下降。
+- LLM Prompt 修改后，务必在测试集上跑评估（`python scripts/evaluate.py`，离线零 LLM），确认准确率没有下降。
 - 故障诊断 Agent 的诊断结论必须标注置信度（高/中/低），置信度为「低」时自动触发追问或转人工流程。
 - 工单系统状态变更必须记录操作日志（谁、什么时间、从什么状态变成什么状态、原因），对应 `TicketLog` 审计表，用于后续审计。
 - 所有外部 API 调用（ERP、CRM、WMS）必须设置超时（默认 10 秒），超时后走降级路径（参考 `core/retry.py`）。

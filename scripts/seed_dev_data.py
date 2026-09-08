@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import bcrypt  # noqa: E402
 
 from backend.core.logger import get_logger  # noqa: E402
-from backend.db.models import Customer, Device, User  # noqa: E402
+from backend.db.models import Customer, Device, Part, User  # noqa: E402
 from backend.dependencies import AsyncSessionLocal  # noqa: E402
 
 logger = get_logger(__name__)
@@ -103,6 +103,44 @@ async def seed() -> None:
                 continue
             session.add(Device(**d))
             logger.info("seed.device_created", device_sn=d["device_sn"])
+
+        # ── 备件库存（含在库 / 缺货两种状态，演示售后配件查询）──
+        parts = [
+            dict(
+                part_no="BRG-6204", name="深沟球轴承 6204", category="机械",
+                stock_qty=25, lead_time_days=3, price=45.0,
+                device_models="CNC-1000,CNC-2000",
+            ),
+            dict(
+                part_no="SPNDL-BT40", name="主轴组件 BT40", category="机械",
+                stock_qty=2, lead_time_days=15, price=12800.0,
+                device_models="CNC-1000",
+            ),
+            dict(
+                part_no="FAN-COOL-120", name="冷却风扇 12038", category="电气",
+                stock_qty=40, lead_time_days=2, price=120.0,
+                device_models="CNC-1000,CNC-2000",
+            ),
+            dict(
+                part_no="ENCDR-INC20", name="增量式编码器", category="电气",
+                stock_qty=8, lead_time_days=5, price=860.0,
+                device_models="CNC-1000,CNC-2000",
+            ),
+            dict(
+                part_no="VFD-7K5", name="变频器 7.5kW", category="电气",
+                stock_qty=0, lead_time_days=21, price=4200.0,
+                device_models="CNC-1000,CNC-2000",
+            ),
+        ]
+        for p in parts:
+            exists = (await session.execute(
+                select(Part).where(Part.part_no == p["part_no"]),
+            )).scalar_one_or_none()
+            if exists:
+                logger.info("seed.part_exists", part_no=p["part_no"])
+                continue
+            session.add(Part(**p))
+            logger.info("seed.part_created", part_no=p["part_no"])
 
         await session.commit()
         logger.info("seed.done")

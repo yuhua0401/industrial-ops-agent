@@ -633,7 +633,7 @@ async def _stream_after_sale_agent(req: UnifiedChatRequest):
         graph = supervisor.get_after_sale_graph()
         initial_state: dict = {
             "messages": [], "session_id": req.session_id,
-            "customer_id": req.customer_id, "device_sn": "",
+            "customer_id": req.customer_id, "device_sn": req.device_sn,
             "message": req.message, "request_type": "",
             "warranty_info": None, "part_order": None,
             "appointment_time": None, "appointment_info": None,
