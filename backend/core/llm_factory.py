@@ -7,16 +7,18 @@ llm_factory - 大模型工厂
 # LLM Factory：统一封装大模型调用，按 Agent 类型路由。
 # 规矩：所有 Agent 必须通过此模块获取模型，禁止直接调用 init_chat_model。
 
-from typing import Type, Any                          # 类型注解用：Type 表示「某个类本身」，Any 表示任意类型
-from pydantic import BaseModel                        # 结构化输出的 Schema 都是它的子类
-import httpx                                          # HTTP 客户端库（用来自定义网络行为）
-from langchain.chat_models import init_chat_model     # 2.3 学的：创建聊天模型（1.x 写法）
-from langchain_core.language_models import BaseChatModel  # 聊天模型的基类（类型注解用）
-from langchain_core.runnables import Runnable         # 「可运行对象」基类，结构化模型属于它
-
-from backend.config import get_settings               # 读配置（API Key、base_url 等）
-from backend.core.logger import get_logger            # 结构化日志
 import warnings
+from typing import Any  # 类型注解用：Any 表示任意类型
+
+import httpx  # HTTP 客户端库（用来自定义网络行为）
+from langchain.chat_models import init_chat_model  # 2.3 学的：创建聊天模型（1.x 写法）
+from langchain_core.language_models import BaseChatModel  # 聊天模型的基类（类型注解用）
+from langchain_core.runnables import Runnable  # 「可运行对象」基类，结构化模型属于它
+from pydantic import BaseModel  # 结构化输出的 Schema 都是它的子类
+
+from backend.config import get_settings  # 读配置（API Key、base_url 等）
+from backend.core.logger import get_logger  # 结构化日志
+
 warnings.filterwarnings("ignore", message=".*extra_body.*")
 
 logger = get_logger(__name__)                         # 本模块的日志器，name 用当前模块名
@@ -42,11 +44,13 @@ _AGENT_MODEL_ROUTING: dict[str, str] = {
     "intent":       "deepseek-v4-pro",     # 意图识别
     "summarize":    "deepseek-v4-flash",   # 对话摘要
     "after_sale":   "deepseek-v4-flash",   # 售后协调
+    "vision":       "deepseek-v4-flash-vision-exp",  # 故障图片识别（多模态；失败时调用方降级）
 }
 
 _MODEL_ID_MAP: dict[str, str] = {
     "deepseek-v4-flash": "deepseek-v4-flash",
-    "deepseek-v4-pro":"deepseek-v4-pro"
+    "deepseek-v4-pro":"deepseek-v4-pro",
+    "deepseek-v4-flash-vision-exp": "deepseek-v4-flash-vision-exp",
 }
 
 
@@ -126,7 +130,7 @@ class LLMFactory:
     def get_structured_llm(
         cls,
         agent_type: str,
-        output_schema: Type[BaseModel],   # 期望的输出结构（一个 Pydantic 模型类）
+        output_schema: type[BaseModel],   # 期望的输出结构（一个 Pydantic 模型类）
         temperature: float = 0,
     ) -> Runnable:
         """获取「绑定了结构化输出 Schema」的模型。
@@ -147,6 +151,6 @@ def get_llm(agent_type: str, temperature: float = 0, streaming: bool = False) ->
     return LLMFactory.get_llm(agent_type, temperature=temperature, streaming=streaming)
 
 
-def get_structured_llm(agent_type: str, output_schema: Type[BaseModel]) -> Runnable:
+def get_structured_llm(agent_type: str, output_schema: type[BaseModel]) -> Runnable:
     """LLMFactory.get_structured_llm 的便捷入口。"""
     return LLMFactory.get_structured_llm(agent_type, output_schema)

@@ -8,9 +8,10 @@ Version: 0.0.1
 # 全项目的日志工具：在标准库 logging 之上做一层包装，
 # 支持「事件名 + 键值对」的结构化日志写法。
 
-import logging                            # Python 标准库的日志模块（你用过的那个）
-import sys                                # 用于把日志输出到标准输出 stdout
-from backend.config import get_settings   # 读取配置（需要里面的 log_level 日志级别）
+import logging  # Python 标准库的日志模块（你用过的那个）
+import sys  # 用于把日志输出到标准输出 stdout
+
+from backend.config import get_settings  # 读取配置（需要里面的 log_level 日志级别）
 
 
 class _Logger:

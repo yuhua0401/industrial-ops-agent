@@ -134,6 +134,78 @@ async def test_llm_route_exception_fallback(monkeypatch):
 
 
 # ──────────────────────────────────────────────────────────────
+# 路由置信度真值化
+# ──────────────────────────────────────────────────────────────
+
+@pytest.mark.asyncio
+async def test_llm_route_confidence_parsed(monkeypatch):
+    """LLM 自评置信度被解析透传。"""
+    raw = '{"label": "diagnosis", "reason": "明确故障码", "confidence": 0.62}'
+    monkeypatch.setattr(chat_api, "get_llm", lambda *a, **k: _make_fake_llm(raw))
+    result = await chat_api._llm_route("设备报E001")
+    assert result.confidence == 0.62
+
+
+@pytest.mark.asyncio
+async def test_llm_route_confidence_clamped(monkeypatch):
+    """越界收敛到 [0,1]；非法值用默认 0.7。"""
+    monkeypatch.setattr(
+        chat_api, "get_llm",
+        lambda *a, **k: _make_fake_llm('{"label": "ticket", "reason": "x", "confidence": 1.7}'))
+    result = await chat_api._llm_route("查工单")
+    assert result.confidence == 1.0
+
+    monkeypatch.setattr(
+        chat_api, "get_llm",
+        lambda *a, **k: _make_fake_llm('{"label": "ticket", "reason": "x", "confidence": "abc"}'))
+    result = await chat_api._llm_route("查工单")
+    assert result.confidence == 0.7
+
+
+@pytest.mark.asyncio
+async def test_llm_route_invalid_label_lowers_confidence(monkeypatch):
+    """非法 label 强制降级时，置信度压到 ≤0.5。"""
+    monkeypatch.setattr(
+        chat_api, "get_llm",
+        lambda *a, **k: _make_fake_llm('{"label": "whatever", "reason": "x", "confidence": 0.9}'))
+    result = await chat_api._llm_route("测试")
+    assert result.label == "knowledge"
+    assert result.confidence <= 0.5
+
+
+@pytest.mark.asyncio
+async def test_llm_route_exception_low_confidence(monkeypatch):
+    """LLM 挂掉兜底时置信度为 0.5（而不是虚高）。"""
+
+    class _FailLLM:
+        async def ainvoke(self, messages):
+            raise RuntimeError("LLM down")
+
+    monkeypatch.setattr(chat_api, "get_llm", lambda *a, **k: _FailLLM())
+    result = await chat_api._llm_route("测试")
+    assert result.confidence == 0.5
+
+
+# ──────────────────────────────────────────────────────────────
+# 售后 meta 置信度
+# ──────────────────────────────────────────────────────────────
+
+def test_after_sale_confidence_by_result():
+    f = chat_api._after_sale_confidence
+    assert f({"request_type": "warranty",
+              "warranty_info": {"status": "in_warranty"}}) == 0.9
+    assert f({"request_type": "warranty",
+              "warranty_info": {"status": "unknown", "error": "缺少序列号"}}) == 0.4
+    assert f({"request_type": "parts",
+              "part_order": {"stock_info": "库存 25 件，预计 3 天内发货"}}) == 0.9
+    assert f({"request_type": "parts",
+              "part_order": {"stock_info": "未找到配件 X 的库存档案"}}) == 0.5
+    assert f({"request_type": "appointment", "appointment_info": {"appointment_id": "A"}}) == 0.9
+    assert f({"request_type": "appointment", "appointment_info": None}) == 0.5
+    assert f({"request_type": ""}) == 0.5
+
+
+# ──────────────────────────────────────────────────────────────
 # _extract_ticket_id
 # ──────────────────────────────────────────────────────────────
 

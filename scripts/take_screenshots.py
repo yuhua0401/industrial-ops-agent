@@ -81,7 +81,17 @@ async def run(url: str) -> int:
 
         print("打开演示页…")
         await page.goto(url, wait_until="domcontentloaded")
+
+        # ── 登录页（整页鉴权视图）────────────────────────────
+        await page.wait_for_selector("#loginView", state="visible")
+        await page.wait_for_timeout(1200)
+        await shot(page, "login.png")
+
+        # 提交登录（engineer/admin123 已预填）
+        await page.click("#loginSubmitBtn")
+        await page.wait_for_selector("#appView:not(.hidden)", state="attached")
         await page.wait_for_selector(".preset-grid .q-btn", state="visible")
+        print("  登录成功（engineer），进入主界面")
 
         # 预填设备上下文（pipeline 售后环节据此查保修），并断言确已写入
         await page.fill("#deviceModel", "CNC-1000")
@@ -91,16 +101,6 @@ async def run(url: str) -> int:
 
         await page.wait_for_timeout(1500)
         await shot(page, "welcome.png")
-
-        # ── 登录弹窗 ─────────────────────────────────────────
-        await page.click("#loginBtn")
-        await page.wait_for_selector("#loginModal:not(.hidden)", state="visible")
-        await page.wait_for_timeout(400)
-        await shot(page, "login.png")
-
-        await page.click("#loginSubmitBtn")
-        await page.wait_for_selector("#userInfo", state="visible")
-        print("  登录成功（engineer）")
 
         # ── 场景：知识问答 ───────────────────────────────────
         print("场景：知识问答…")

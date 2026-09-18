@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 convert_examples_to_tree.py - 将维修实例批量转换为诊断树节点
 
@@ -193,7 +192,7 @@ def extract_solutions(treatment: str) -> list[dict]:
     if not parts:
         parts = [t[:50]]
     steps = []
-    for i, s in enumerate(parts[:4]):
+    for s in parts[:4]:
         need_skill = any(w in s for w in TICKET_WORDS) or len(s) > 25
         steps.append({"step": s, "need_skill": need_skill})
     return steps

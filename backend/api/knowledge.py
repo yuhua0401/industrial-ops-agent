@@ -16,16 +16,16 @@ SSE 事件类型：
 import json
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
-from langchain_core.messages import HumanMessage, SystemMessage
 
 from backend.agents.knowledge.graph import build_knowledge_graph
-from backend.agents.knowledge.prompts import SYSTEM_PROMPT, KNOWLEDGE_GENERATE_PROMPT
+from backend.agents.knowledge.prompts import KNOWLEDGE_GENERATE_PROMPT, SYSTEM_PROMPT
 from backend.agents.knowledge.state import KnowledgeResult
 from backend.core.llm_factory import get_llm, get_structured_llm
-from backend.dependencies import get_current_user
 from backend.core.logger import get_logger
+from backend.dependencies import get_current_user
 
 router = APIRouter()
 logger = get_logger(__name__)
@@ -99,7 +99,7 @@ async def chat(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"code": "KNOWLEDGE_ERROR", "message": str(e)},
-        )
+        ) from e
 
     kr = result.get("knowledge_result") or {}
     return ChatResponse(
@@ -232,6 +232,7 @@ async def get_session_history(
     从数据库 conversations 表读取历史对话记录。
     """
     from sqlalchemy import text as sa_text
+
     from backend.dependencies import AsyncSessionLocal
 
     messages: list[SessionMessage] = []

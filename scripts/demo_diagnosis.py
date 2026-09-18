@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 故障诊断 Agent（Agent③）演示脚本 —— 离线运行，无需真实 LLM / 知识库 / 网络。
 
@@ -24,7 +23,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from langchain_core.messages import AIMessage
 from langgraph.types import Command
 
-from backend.agents.diagnosis import nodes, prompts as diag_prompts
+from backend.agents.diagnosis import nodes
+from backend.agents.diagnosis import prompts as diag_prompts
 from backend.agents.diagnosis.diag_tree import DiagTree
 from backend.agents.diagnosis.graph import build_diagnosis_graph
 
@@ -175,16 +175,21 @@ def demo_functions():
 
     # ── 2. 输入解析：故障码 + 现象提取 ──────────────────────
     print("\n【2】输入解析（纯函数）")
-    print(f"  _extract_fault_code('设备报E001，电机不转', None)  → {nodes._extract_fault_code('设备报E001，电机不转', None)}")
-    print(f"  _extract_fault_code('设备报错', 'e-102')           → {nodes._extract_fault_code('设备报错', 'e-102')} (入参优先+转大写)")
+    print(f"  _extract_fault_code('设备报E001，电机不转', None)"
+          f" → {nodes._extract_fault_code('设备报E001，电机不转', None)}")
+    print(f"  _extract_fault_code('设备报错', 'e-102')"
+          f" → {nodes._extract_fault_code('设备报错', 'e-102')} (入参优先+转大写)")
     print(f"  _extract_fault_code('电机不转', None)               → {nodes._extract_fault_code('电机不转', None)}")
-    print(f"  _extract_phenomena('设备，出现，问题')              → {nodes._extract_phenomena('设备，出现，问题')} (全是停用词)")
-    print(f"  _extract_phenomena('电机不转了，出现过载报警')      → {nodes._extract_phenomena('电机不转了，出现过载报警')}")
+    print(f"  _extract_phenomena('设备，出现，问题')"
+          f" → {nodes._extract_phenomena('设备，出现，问题')} (全是停用词)")
+    print(f"  _extract_phenomena('电机不转了，出现过载报警')"
+          f" → {nodes._extract_phenomena('电机不转了，出现过载报警')}")
 
     # ── 3. 三轨匹配 ─────────────────────────────────────────
     print("\n【3】三轨匹配（run_diag_tracks_node，含 LLM 轨容错）")
     exact = nodes._run_exact_track(tree, "E001")
-    print(f"  轨1 _run_exact_track(tree,'E001') → source={exact['source']} node={exact['node_id']} conf={exact['confidence']}")
+    print(f"  轨1 _run_exact_track(tree,'E001') → source={exact['source']}"
+          f" node={exact['node_id']} conf={exact['confidence']}")
     print(f"  轨1 _run_exact_track(tree,'E999') → {nodes._run_exact_track(tree, 'E999')}")
     fuzzy_res = nodes._run_fuzzy_track(tree, ["电机不转", "过载报警"])
     print(f"  轨2 _run_fuzzy_track → {[(m['node_id'], m['confidence']) for m in fuzzy_res]}")
@@ -246,9 +251,11 @@ def demo_functions():
                       "solutions": [{"step": "断电盘车", "need_skill": False}],
                       "need_ticket": False}}
     fb = nodes._template_fallback(_base_state(exact_match=exact), has_tree_hit=True)
-    print(f"  树命中 → conclusion={fb['conclusion']!r}, need_ticket={fb['need_ticket']}, _template={fb.get('_template')}")
+    print(f"  树命中 → conclusion={fb['conclusion']!r},"
+          f" need_ticket={fb['need_ticket']}, _template={fb.get('_template')}")
     fb2 = nodes._template_fallback(_base_state(exact_match=None, fuzzy_matches=[]), has_tree_hit=False)
-    print(f"  无命中 → need_ticket={fb2['need_ticket']}, confidence={fb2['confidence']}, reason={fb2['ticket_reason']!r}")
+    print(f"  无命中 → need_ticket={fb2['need_ticket']},"
+          f" confidence={fb2['confidence']}, reason={fb2['ticket_reason']!r}")
 
     # ── 7. 各节点单独调用（parse / load_diag_tree 降级 / route） ──
     print("\n【7】节点单独效果")
@@ -293,7 +300,7 @@ async def run_scenario(name: str, user_input: str, resume: dict | None, first_co
     interrupts = result.get("__interrupt__", [])
     if interrupts:
         payload = interrupts[0].value
-        print(f"\n  >> 图在追问点暂停（interrupt）:")
+        print("\n  >> 图在追问点暂停（interrupt）:")
         print(f"      问题: {payload['question']}")
         print(f"      附带证据: {payload['evidence'][:60]}...")
         print(f"  >> 用户回答: {resume!r}")

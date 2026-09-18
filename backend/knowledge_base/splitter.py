@@ -10,11 +10,12 @@ splitter - 文档智能分块
 - 完整建库流水线见 scripts/build_knowledge_base.py
 """
 from pathlib import Path
+
 from langchain_core.documents import Document
 from langchain_text_splitters import (
     MarkdownHeaderTextSplitter,
-    RecursiveCharacterTextSplitter,
     MarkdownTextSplitter,
+    RecursiveCharacterTextSplitter,
 )
 
 from backend.config import get_settings

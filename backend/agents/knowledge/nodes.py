@@ -8,8 +8,8 @@ nodes - 产品知识库 Agent（RAG 检索）
 """
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from backend.agents.knowledge.state import KnowledgeState, KnowledgeResult
-from backend.agents.knowledge.prompts import SYSTEM_PROMPT, KNOWLEDGE_GENERATE_PROMPT
+from backend.agents.knowledge.prompts import KNOWLEDGE_GENERATE_PROMPT, SYSTEM_PROMPT
+from backend.agents.knowledge.state import KnowledgeResult, KnowledgeState
 from backend.core.llm_factory import get_structured_llm
 from backend.core.logger import get_logger
 

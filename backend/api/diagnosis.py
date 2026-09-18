@@ -24,6 +24,8 @@ class DiagnosisRequest(BaseModel):
     customer_id:  str   = Field(default="", description="客户 ID（可选）")
     device_model: str   = Field(default="", description="设备型号（可选，辅助诊断）")
     fault_code:   str   = Field(default="", description="故障码（可选）")
+    image:        str   = Field(default="", max_length=7_000_000,
+                                description="故障图片 base64 dataURL（可选，触发视觉描述）")
 
 
 class DiagnosisResponse(BaseModel):
@@ -76,6 +78,7 @@ async def run_diagnosis(
             req.message, req.session_id,
             customer_id=req.customer_id, device_model=req.device_model,
             fault_code=req.fault_code or None,
+            image=req.image or None,
         )
         try:
             result = await graph.ainvoke(initial_state, config)

@@ -4,6 +4,7 @@ loader - 文档加载器
 支持 PDF、Word、Markdown、Excel 等格式的文档解析。
 """
 from pathlib import Path
+
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain_core.documents import Document
 

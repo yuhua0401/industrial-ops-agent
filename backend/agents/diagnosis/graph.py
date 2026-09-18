@@ -20,21 +20,21 @@ if __package__ in (None, ""):
     from pathlib import Path
     sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
-from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
+from langgraph.graph import END, START, StateGraph
 
-from backend.agents.diagnosis.state import DiagnosisState
 from backend.agents.diagnosis.nodes import (
-    parse_input_node,
-    load_diag_tree_node,
-    run_diag_tracks_node,
-    assemble_context_node,
-    generate_report_node,
-    check_sufficiency_node,
-    ask_clarify_node,
     apply_clarify_answer_node,
+    ask_clarify_node,
+    assemble_context_node,
+    check_sufficiency_node,
+    generate_report_node,
+    load_diag_tree_node,
+    parse_input_node,
     route_next_node,
+    run_diag_tracks_node,
 )
+from backend.agents.diagnosis.state import DiagnosisState
 
 
 def _route_after_check(state: DiagnosisState) -> str:

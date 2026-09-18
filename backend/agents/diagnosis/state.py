@@ -8,10 +8,11 @@ state - 故障诊断 Agent（Agent③）的状态定义
   输入解析、三轨匹配（精确/模糊/LLM）、证据组装、追问循环、路由结果。
 """
 from typing import Annotated, Optional
-from typing_extensions import TypedDict
-from langgraph.graph.message import add_messages
+
 from langchain_core.messages import BaseMessage
+from langgraph.graph.message import add_messages
 from pydantic import BaseModel, Field
+from typing_extensions import TypedDict
 
 
 class DiagnosisStep(BaseModel):
@@ -56,7 +57,7 @@ class DiagnosisReport(BaseModel):
 class ClarifyAnswer(BaseModel):
     """追问确认输入（interrupt 恢复时传入）。"""
     answer:     str                # 用户对追问的回答
-    fault_code: Optional[str] = None   # 用户补充的故障码
+    fault_code: str | None = None   # 用户补充的故障码
 
 
 class DiagnosisState(TypedDict):
@@ -69,21 +70,21 @@ class DiagnosisState(TypedDict):
     fault_description: str               # 客户描述的故障现象
     collected_symptoms: list[str]        # 已采集的症状列表
     current_step: int                    # 当前排查到第几步
-    diagnosis_result: Optional[dict]     # DiagnosisResult.model_dump()（兼容保留）
+    diagnosis_result: dict | None     # DiagnosisResult.model_dump()（兼容保留）
     resolved: bool                       # 是否已解决
 
     # ── 请求上下文（迁移新增）──────────────────────────────
     user_input:  str
-    fault_code:  Optional[str]
-    image:       Optional[str]
-    image_desc:  Optional[str]
+    fault_code:  str | None
+    image:       str | None
+    image_desc:  str | None
 
     # ── 解析结果 ──────────────────────────────────────────────
     phenomena:   list[str]
     kb_hits:     list[dict]      # 知识库检索结果（hybrid_retrieve）
 
     # ── 三轨匹配结果 ──────────────────────────────────────────
-    exact_match:    Optional[dict]   # 第一轨：故障码精确匹配
+    exact_match:    dict | None   # 第一轨：故障码精确匹配
     fuzzy_matches:  list[dict]       # 第二轨：现象模糊匹配
     llm_hypotheses: list[dict]       # 第三轨：LLM 推理假设
 
@@ -91,12 +92,12 @@ class DiagnosisState(TypedDict):
     evidence_context: str
 
     # ── 诊断报告（迁移版）─────────────────────────────────────
-    report:      Optional[dict]
+    report:      dict | None
     confidence:  float
 
     # ── 追问 / 人工确认 ───────────────────────────────────────
-    clarify_question: Optional[str]
-    clarify_answer:   Optional[dict]
+    clarify_question: str | None
+    clarify_answer:   dict | None
     turn:             int
 
     # ── 最终结果 ──────────────────────────────────────────────
@@ -105,7 +106,7 @@ class DiagnosisState(TypedDict):
 
     # ── 降级标记 ──────────────────────────────────────────────
     fallback_used: bool
-    structured_output: Optional[dict]
+    structured_output: dict | None
 
 
 # ──────────────────────────────────────────────────────────────

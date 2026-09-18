@@ -4,19 +4,23 @@ api_router - API 聚合路由
 所有业务接口通过此模块统一注册，挂载到 /api/v1 下。
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 api_router = APIRouter()
 
-# ── 认证 ──────────────────────────────────────────────────────
+# ── 认证（公开：签发 Token，不能要求鉴权）─────────────────────
 from backend.api.auth import router as auth_router
 
 api_router.include_router(auth_router, tags=["认证"])
 
-# ── 统一对话入口 ──────────────────────────────────────────────
-from backend.api.chat import router as chat_router
+# ── 统一对话入口（鉴权：SSE 可触发全部 Agent 并创建工单）──────
+from backend.api.chat import router as chat_router  # noqa: E402
+from backend.dependencies import get_current_user  # noqa: E402
 
-api_router.include_router(chat_router, prefix="/chat", tags=["对话"])
+api_router.include_router(
+    chat_router, prefix="/chat", tags=["对话"],
+    dependencies=[Depends(get_current_user)],
+)
 
 # ── 产品知识问答 ──────────────────────────────────────────────
 from backend.api.knowledge import router as knowledge_router

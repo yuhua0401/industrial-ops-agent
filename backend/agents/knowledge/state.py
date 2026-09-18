@@ -2,10 +2,11 @@
 state - 产品知识库 Agent 的状态定义
 """
 from typing import Annotated, Optional
-from typing_extensions import TypedDict
-from langgraph.graph.message import add_messages
+
 from langchain_core.messages import BaseMessage
+from langgraph.graph.message import add_messages
 from pydantic import BaseModel, Field
+from typing_extensions import TypedDict
 
 
 class KnowledgeResult(BaseModel):
@@ -23,4 +24,4 @@ class KnowledgeState(TypedDict):
     device_model: str
     query: str                          # 客户问题
     retrieved_docs: list[dict]          # 检索到的文档片段
-    knowledge_result: Optional[dict]    # KnowledgeResult.model_dump()
+    knowledge_result: dict | None    # KnowledgeResult.model_dump()

@@ -26,15 +26,16 @@ if __package__ in (None, ""):
 from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.types import interrupt
 
-from backend.agents.diagnosis.state import DiagnosisState, DiagnosisReport
-from backend.agents.diagnosis.prompts import (
-    SYSTEM_PROMPT,
-    REASON_PROMPT,
-    DIAGNOSIS_REPORT_PROMPT,
-    CLARIFY_PROMPT,
-)
 from backend.agents.diagnosis.diag_tree import DiagTree
 from backend.agents.diagnosis.kb_client import KBClient
+from backend.agents.diagnosis.prompts import (
+    CLARIFY_PROMPT,
+    DIAGNOSIS_REPORT_PROMPT,
+    IMAGE_DESC_PROMPT,
+    REASON_PROMPT,
+    SYSTEM_PROMPT,
+)
+from backend.agents.diagnosis.state import DiagnosisReport, DiagnosisState
 from backend.core.llm_factory import get_llm
 from backend.core.logger import get_logger
 
@@ -243,6 +244,36 @@ def _extract_atom_phenomena(user_input: str) -> list[str]:
     return out[:4]
 
 
+async def _describe_image(image_b64: str) -> str | None:
+    """视觉模型描述故障图片；失败返回 None（降级为纯文字诊断，不抛异常）。
+
+    image_b64 支持裸 base64 或完整 dataURL。
+    """
+    data_url = image_b64 if image_b64.startswith("data:") else f"data:image/jpeg;base64,{image_b64}"
+    try:
+        llm = get_llm("vision", temperature=0)
+        message = HumanMessage(content=[
+            {"type": "text", "text": IMAGE_DESC_PROMPT},
+            {"type": "image_url", "image_url": {"url": data_url}},
+        ])
+        resp = await _ainvoke_llm(llm, [message])
+        desc = _get_message_content(resp).strip()
+        if not desc:
+            return None
+        logger.info("parse_input.image_described", length=len(desc))
+        return desc[:500]
+    except Exception as e:
+        logger.warning("diagnosis.vision_failed", error=str(e))
+        return None
+
+
+def _image_block(image_desc: str | None) -> str:
+    """有图片描述时拼接到用户描述后（仅供 LLM 阅读；现象提取不使用，避免污染匹配）。"""
+    if not image_desc:
+        return ""
+    return f"\n【图片描述】{image_desc}"
+
+
 async def parse_input_node(state: DiagnosisState) -> dict:
     """
     解析用户输入：提取故障码 + 现象关键词；图片走降级链
@@ -256,11 +287,12 @@ async def parse_input_node(state: DiagnosisState) -> dict:
                        original_len=len(user_input), max_chars=MAX_INPUT_CHARS)
         user_input = user_input[:MAX_INPUT_CHARS]
 
-    # 图片降级链：一期先置空 image_desc，后续接入视觉/OCR 后替换
+    # 图片降级链：视觉 LLM 描述 → 失败置空（仅按文字诊断，不阻断流程）
     image_desc = None
     if state.get("image"):
-        # TODO(⑤): 接入视觉模型 / PaddleOCR，产出 image_desc
-        logger.warning("parse_input.image_not_implemented", image=state["image"])
+        image_desc = await _describe_image(state["image"])
+        if image_desc is None:
+            logger.warning("parse_input.vision_degraded_text_only")
 
     return {
         "fault_code": _extract_fault_code(user_input, state.get("fault_code")),
@@ -364,7 +396,7 @@ async def run_diag_tracks_node(state: DiagnosisState) -> dict:
     fuzzy   = raw[1] if not isinstance(raw[1], Exception) else []
     llm_hyp = raw[2] if not isinstance(raw[2], Exception) else []
 
-    for name, exc in zip(["exact", "fuzzy", "llm"], raw):
+    for name, exc in zip(["exact", "fuzzy", "llm"], raw, strict=False):
         if isinstance(exc, Exception):
             logger.error(f"diag_tracks.{name}_failed", error=str(exc))
 
@@ -418,10 +450,11 @@ async def generate_report_node(state: DiagnosisState) -> dict:
     对齐 exam._review_one_subjective 的两步 + exam 的 JSON 降级模式。
     """
     has_tree_hit = state.get("exact_match") is not None or bool(state.get("fuzzy_matches"))
+    image_block = _image_block(state.get("image_desc"))
     reasoning_trace = ""
     try:
         think_prompt = REASON_PROMPT.format(
-            user_input=state.get("user_input", ""),
+            user_input=state.get("user_input", "") + image_block,
             fault_code=state.get("fault_code") or "未知",
             phenomena="、".join(state.get("phenomena", [])),
             matched_nodes=state.get("evidence_context", ""),
@@ -436,7 +469,7 @@ async def generate_report_node(state: DiagnosisState) -> dict:
     report: dict | None = None
     try:
         report_prompt = DIAGNOSIS_REPORT_PROMPT.format(
-            user_input=state.get("user_input", ""),
+            user_input=state.get("user_input", "") + image_block,
             fault_code=state.get("fault_code") or "未知",
             phenomena="、".join(state.get("phenomena", [])),
             matched_nodes=state.get("evidence_context", ""),
@@ -623,6 +656,7 @@ async def route_next_node(state: DiagnosisState) -> dict:
 
 if __name__ == "__main__":
     import sys
+
     from langchain_core.messages import AIMessage
 
     if sys.stdout and hasattr(sys.stdout, "reconfigure"):

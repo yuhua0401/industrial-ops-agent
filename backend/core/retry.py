@@ -8,17 +8,19 @@ Version:0.0.1
 # backend/core/retry.py
 # 三层兜底机制：自动重试 → Agent 级降级 → 系统级兜底
 
-import asyncio                                   # 异步：用于超时控制和等待
-from functools import wraps                      # @wraps：装饰器里保留原函数的名字/文档
-from typing import Callable, Any, Optional       # 类型注解：可调用对象 / 任意 / 可选
+import asyncio  # 异步：用于超时控制和等待
+from collections.abc import Callable  # 类型注解：可调用对象 / 任意 / 可选
+from functools import wraps  # @wraps：装饰器里保留原函数的名字/文档
+from typing import Any, Optional
 
-from backend.core.exceptions import (            # 引入 3.3 定义的异常（已去掉 Judge0 的 Sandbox 异常）
+from backend.core.exceptions import (  # 引入 3.3 定义的异常（已去掉 Judge0 的 Sandbox 异常）
+    AuthenticationError,
+    InvalidInputError,
     LLMAPIError,
     MilvusConnectionError,
-    InvalidInputError,
-    AuthenticationError,
 )
 from backend.core.logger import get_logger
+
 logger = get_logger(__name__)
 
 
@@ -54,7 +56,7 @@ def with_retry(agent_type: str = ""):
         async def wrapper(*args, **kwargs) -> Any:   # 最内层：真正的执行逻辑
 
             # ── 第一层：自动重试 ──────────────────────────
-            last_error: Optional[Exception] = None   # 记录最后一次的错误，留给后面降级用
+            last_error: Exception | None = None   # 记录最后一次的错误，留给后面降级用
 
             for attempt in range(MAX_RETRIES + 1):   # 循环 3 次：attempt = 0, 1, 2
                 try:

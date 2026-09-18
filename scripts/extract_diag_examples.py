@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 extract_diag_examples.py - 从数控机床维修手册 PDF 提取故障诊断实例
 
@@ -56,7 +55,7 @@ def extract_examples(pdf_path: str) -> list[dict]:
 
     results = []
     anchors = list(re.finditer(r"故障现象[：:]", text))
-    for i, m in enumerate(anchors):
+    for m in anchors:
         pos = m.start()
         # 现象段：锚点 → 下一个"故障检查/分析/处理"
         rest = text[pos + 4: pos + 500]

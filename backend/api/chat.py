@@ -18,7 +18,7 @@ SSE 事件类型：
 import json
 import re
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 
 from fastapi import APIRouter
 from langchain_core.messages import HumanMessage
@@ -40,7 +40,7 @@ supervisor = get_supervisor()
 # Agent 类型枚举（对齐 Supervisor 状态机）
 # ═══════════════════════════════════════════════════════════════
 
-class AgentType(str, Enum):
+class AgentType(StrEnum):
     """Agent 类型枚举，与 Supervisor 路由表保持一致。"""
     KNOWLEDGE  = "knowledge"    # Agent② 产品知识问答
     DIAGNOSIS  = "diagnosis"    # Agent③ 故障诊断
@@ -48,7 +48,7 @@ class AgentType(str, Enum):
     AFTER_SALE = "after_sale"   # Agent⑤ 售后协调
 
 
-class ExecutionMode(str, Enum):
+class ExecutionMode(StrEnum):
     """执行模式。"""
     SINGLE   = "single"     # 单 Agent 执行
     PIPELINE = "pipeline"   # 多 Agent 串联（诊断 → 工单 → 售后）
@@ -223,7 +223,14 @@ _ROUTE_PROMPT = """判断用户需求应路由到哪个功能模块。
 - clarify      : 意图不明确，无法判断用户想做什么，需要追问
 
 严格按以下 JSON 格式返回，不要有其他内容：
-{{"label": "功能名", "reason": "一句话说明判断依据"}}
+{{"label": "功能名", "reason": "一句话说明判断依据", "confidence": 0.0到1.0的小数}}
+
+confidence 为你对本次分类的把握度：
+- 命中强特征（明确的故障码/工单号/配件编号/保修询问）给 0.9 以上
+- 语义清晰但需要理解意图给 0.7-0.9
+- 模糊或存在多种理解给 0.4-0.7
+- 几乎无法判断给 0.4 以下
+- 用户没有表达任何具体需求（如"随便问问"、无实质内容的闲聊）→ label 选 clarify 且 confidence ≤ 0.5
 
 用户输入：{message}"""
 
@@ -279,25 +286,37 @@ async def _llm_route(message: str) -> _RouteResult:
         parsed = json.loads(raw)
         label = parsed.get("label", "knowledge").strip().lower()
         reason = parsed.get("reason", "LLM 路由判断")
+        confidence = _clamp_confidence(parsed.get("confidence"), default=0.7)
 
         if label not in _VALID_LABELS:
             logger.warning("unified_chat.llm_route_unknown_label", label=label, fallback="knowledge")
             label = "knowledge"
+            confidence = min(confidence, 0.5)   # 分类不可信，压低置信度
 
-        logger.info("unified_chat.llm_route_result", label=label, reason=reason)
+        logger.info("unified_chat.llm_route_result", label=label,
+                    confidence=round(confidence, 3), reason=reason)
 
     except Exception as e:
         logger.warning("unified_chat.llm_route_failed", error=str(e), fallback="knowledge")
         label = "knowledge"
         reason = "路由判断异常，默认转入产品知识问答"
+        confidence = 0.5
 
     return _RouteResult(
         label=label,
         agent_type=_LABEL_TO_AGENT[label],
         execution_mode=_LABEL_TO_MODE[label],
-        confidence=0.85,
+        confidence=confidence,
         reason=reason,
     )
+
+
+def _clamp_confidence(value, default: float = 0.7) -> float:
+    """把 LLM 自评置信度收敛到 [0,1]；缺失/非法用 default。"""
+    try:
+        return min(max(float(value), 0.0), 1.0)
+    except (TypeError, ValueError):
+        return default
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -352,6 +371,8 @@ class UnifiedChatRequest(BaseModel):
     customer_id: str   = Field(default="", description="客户 ID（可选，用于关联历史工单）")
     device_model: str  = Field(default="", description="设备型号（可选，辅助故障诊断）")
     device_sn:   str   = Field(default="", description="设备序列号（可选，售后查保修用）")
+    image:       str   = Field(default="", max_length=7_000_000,
+                               description="故障图片 base64 dataURL（可选，带图直达故障诊断）")
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -402,6 +423,23 @@ async def unified_chat_stream(req: UnifiedChatRequest):
             else:
                 async for event in _stream_diagnosis_agent(req, resume=True):
                     yield event
+            yield _sse({"type": "done"})
+            return
+
+        # ── Step 0b：带图片 → 直达故障诊断 ────────────────────
+        # 图片通常伴随故障上报，跳过规则拦截与 LLM 路由；
+        # 视觉描述在诊断图 parse_input 节点内生成（失败自动降级纯文字）。
+        if req.image:
+            yield _sse({
+                "type":           "routing_decision",
+                "agent_type":     AgentType.DIAGNOSIS.value,
+                "agent_display":  _AGENT_DISPLAY[AgentType.DIAGNOSIS],
+                "confidence":     0.9,
+                "reason":         "检测到图片输入，直达故障诊断",
+                "execution_mode": ExecutionMode.SINGLE.value,
+            })
+            async for event in _stream_diagnosis_agent(req):
+                yield event
             yield _sse({"type": "done"})
             return
 
@@ -541,9 +579,12 @@ async def _stream_diagnosis_agent(req: UnifiedChatRequest, resume: bool = False)
                     yield event
             return
 
+        if req.image:
+            yield _sse({"type": "progress", "stage": "识别故障图片中..."})
         async for step in supervisor.stream_diagnosis(
             req.message, req.session_id,
             customer_id=req.customer_id, device_model=req.device_model,
+            image=req.image or None,
         ):
             for event in _diagnosis_step_to_sse(step):
                 yield event
@@ -601,7 +642,9 @@ async def _stream_ticket_agent(req: UnifiedChatRequest):
                 yield _sse({"type": "token", "content": info})
             else:
                 yield _sse({"type": "token", "content": f"未找到工单 {ticket_id}，请核对工单号。"})
-            yield _sse({"type": "meta", "answer_mode": "ticket", "confidence": 0.85, "sources": []})
+            # 查到档案 → 高置信；查无此单 → 低置信
+            yield _sse({"type": "meta", "answer_mode": "ticket",
+                        "confidence": 0.95 if info else 0.5, "sources": []})
             return
 
         # 无工单号：视为创建报修工单
@@ -614,7 +657,7 @@ async def _stream_ticket_agent(req: UnifiedChatRequest):
         yield _sse({"type": "token", "content": ticket_result.reply})
         yield _sse({
             "type": "meta", "answer_mode": "ticket",
-            "confidence": 0.85, "sources": [],
+            "confidence": 0.9 if ticket_result.ticket_id else 0.3, "sources": [],
             "ticket_id": ticket_result.ticket_id or "",
         })
 
@@ -656,13 +699,34 @@ async def _stream_after_sale_agent(req: UnifiedChatRequest):
         yield _sse({"type": "token", "content": reply})
         yield _sse({
             "type": "meta", "answer_mode": "after_sale",
-            "confidence": 0.85, "sources": [],
+            "confidence": _after_sale_confidence(final_state), "sources": [],
             "request_type": final_state.get("request_type", ""),
         })
 
     except Exception as e:
         logger.error("unified_chat.after_sale_stream_error", error=str(e), exc_info=True)
         yield _sse({"type": "error", "message": "售后服务异常，请稍后重试"})
+
+
+def _after_sale_confidence(final_state: dict) -> float:
+    """售后 meta 置信度：按实际查询结果判定（查到档案高、未命中/异常低）。"""
+    request_type = final_state.get("request_type", "")
+    warranty = final_state.get("warranty_info")
+    part_order = final_state.get("part_order")
+    appointment = final_state.get("appointment_info")
+
+    if request_type == "warranty":
+        if warranty and warranty.get("status") in ("in_warranty", "out_of_warranty"):
+            return 0.9
+        return 0.4   # unknown / 缺少序列号 / 查询失败
+    if request_type == "parts":
+        stock_text = (part_order or {}).get("stock_info", "")
+        if not stock_text or any(w in stock_text for w in ("未找到", "暂不可用", "请在问题中提供")):
+            return 0.5
+        return 0.9
+    if request_type == "appointment":
+        return 0.9 if appointment else 0.5
+    return 0.5
 
 
 async def _stream_pipeline_agent(req: UnifiedChatRequest, resume: bool = False):

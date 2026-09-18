@@ -5,9 +5,13 @@ config - 项目配置
 """
 # 全项目唯一的「配置中心」：从 .env.local 读取所有配置项，供任何模块取用。
 
-from pydantic_settings import BaseSettings   # Pydantic 的「配置基类」，能自动从环境变量/.env 读取并做类型校验
-from functools import lru_cache              # 标准库装饰器：缓存函数结果，让函数实际只执行一次
 import os
+from functools import lru_cache  # 标准库装饰器：缓存函数结果，让函数实际只执行一次
+
+from pydantic_settings import (
+    BaseSettings,  # Pydantic 的「配置基类」，能自动从环境变量/.env 读取并做类型校验
+)
+
 root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 env_path = os.path.join(root_path,'.env.local')
@@ -45,7 +49,8 @@ class Settings(BaseSettings):
     # ── 本地模型权重路径 ──
     reranker_model_path: str = "./models/reranker/bge-reranker-large"    # 精排模型
     classifier_model_path: str = "./models/classifier/all-MiniLM-L6-v2"  # 意图分类模型（基座）
-    finetuned_classifier_path: str = "./models/classifier/finetuned"     # 意图分类微调模型（QueryClassifier 无参默认加载）
+    # 意图分类微调模型（QueryClassifier 无参默认加载）
+    finetuned_classifier_path: str = "./models/classifier/finetuned"
     bge_m3_model_path: str = "./models/embedding/bge-m3"                 # 嵌入模型
 
     # ── 知识库：嵌入（BGE-M3）──
@@ -86,6 +91,18 @@ class Settings(BaseSettings):
     log_level: str = "INFO"                    # 日志级别
     default_tenant_id: str = "tenant_default"  # 多租户默认值
 
+    # ── 安全 ──
+    allowed_origins: str = (
+        "http://localhost:3000,http://localhost:5173,http://localhost:8080,"
+        "http://127.0.0.1:3000,http://127.0.0.1:5173,http://127.0.0.1:8080"
+    )                                          # CORS 允许来源（逗号分隔，生产改为实际域名）
+    rate_limit_per_minute: int = 120           # 单 IP 每分钟请求上限（超出 429）
+
+    @property
+    def allowed_origins_list(self) -> list[str]:
+        """CORS 来源列表（去掉空项）。"""
+        return [o.strip() for o in self.allowed_origins.split(",") if o.strip()]
+
     # ── LangGraph checkpointer（诊断追问的暂停/恢复存储）──
     checkpointer_backend: str = "memory"       # memory（默认，进程内）/ postgres（跨进程持久化）
 
@@ -97,7 +114,7 @@ class Settings(BaseSettings):
         extra = "ignore"                 # .env.local 里多出来的、模型没定义的字段一律忽略（不报错）
 
 
-@lru_cache()                             # 缓存：保证 get_settings() 只创建一次 Settings、只读一次文件
+@lru_cache                             # 缓存：保证 get_settings() 只创建一次 Settings、只读一次文件
 def get_settings() -> Settings:
     """获取全局唯一的配置对象。任何模块要用配置，都调用这个函数。"""
     return Settings()                    # 首次调用时创建实例；之后每次都返回同一个缓存对象

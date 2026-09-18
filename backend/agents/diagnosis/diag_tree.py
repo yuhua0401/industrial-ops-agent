@@ -5,9 +5,10 @@ diag_tree - 故障诊断树数据结构
 - 项目 DiagnosisTreeNode（Pydantic 模型，供数据维护/导入导出）；
 -  DiagTree（YAML 加载 / 故障码精确匹配 / 现象 Jaccard 模糊匹配 / get_tree），
 """
-from pydantic import BaseModel, Field
-from typing import Optional
 from dataclasses import dataclass, field
+from typing import Optional
+
+from pydantic import BaseModel, Field
 
 
 class DiagnosisTreeNode(BaseModel):
@@ -38,7 +39,7 @@ class Solution:
 class DiagNode:
     node_id:    str
     name:       str
-    fault_code: Optional[str] = None
+    fault_code: str | None = None
     phenomena:  list[str] = field(default_factory=list)
     priority:   int = 1                    # 1低 2中 3高
     causes:     list[RootCause] = field(default_factory=list)
@@ -72,7 +73,7 @@ class DiagTree:
     def load_yaml(self, path: str) -> None:
         """从 YAML 数据文件加载诊断树（数据文件由 ⑤号 维护）。"""
         import yaml
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             raw_nodes = yaml.safe_load(f) or []
         for raw in raw_nodes:
             node = DiagNode(
@@ -95,7 +96,7 @@ class DiagTree:
             self._code_index[node.fault_code.upper()] = node.node_id
 
     # ── 匹配 ────────────────────────────────────────────────
-    def exact_match(self, code: str | None) -> Optional[DiagNode]:
+    def exact_match(self, code: str | None) -> DiagNode | None:
         """故障码精确匹配。code 为 None 或未命中返回 None。"""
         if not code:
             return None
@@ -148,7 +149,7 @@ class DiagTree:
         scored.sort(key=lambda x: x[1], reverse=True)
         return scored
 
-    def get(self, node_id: str) -> Optional[DiagNode]:
+    def get(self, node_id: str) -> DiagNode | None:
         return self._nodes.get(node_id)
 
     def get_tree(self) -> dict:

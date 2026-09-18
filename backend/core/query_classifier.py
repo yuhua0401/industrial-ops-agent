@@ -19,6 +19,7 @@ import torch
 
 from backend.config import get_settings
 from backend.core.logger import get_logger
+
 backend_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
 logger = get_logger(__name__)
@@ -45,7 +46,7 @@ class QueryClassifier:
     """
 
     _instance: Optional["QueryClassifier"] = None
-    def __init__(self, model_path: Optional[str] = None):
+    def __init__(self, model_path: str | None = None):
         """
         Args:
             model_path:
@@ -57,7 +58,8 @@ class QueryClassifier:
         if model_path:
             # 显式传入：用于训练时加载基座，或临时切换其他模型
             model_id = model_path
-            self._is_finetuned = False if model_path == os.path.join(backend_path, settings.classifier_model_path) else True
+            base_path = os.path.join(backend_path, settings.classifier_model_path)
+            self._is_finetuned = model_path != base_path
         else:
             # 默认：加载微调模型（假设已训练完成）
             model_id = os.path.join(backend_path, settings.finetuned_classifier_path)
@@ -236,7 +238,7 @@ class QueryClassifier:
         raw_outputs: list[dict] = self._pipeline(text)[0]
 
         # 查找 general 标签的分数（兼容大小写和 LABEL_0 格式）
-        general_score: Optional[float] = None
+        general_score: float | None = None
         for item in raw_outputs:
             lbl = item["label"].lower()
             if lbl in ("general", "label_0"):
@@ -264,7 +266,7 @@ class QueryClassifier:
     @staticmethod
     def _load_jsonl(path: str) -> list[dict]:
         rows: list[dict] = []
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             for line_no, line in enumerate(f, 1):
                 line = line.strip()
                 if not line:
@@ -305,7 +307,7 @@ class QueryClassifier:
         # 初始化三个列表，分别存放训练集、验证集、测试集的数据
         train_rows, val_rows, test_rows = [], [], []
         # 遍历每个标签组（每个桶），对每个类别单独进行切分，保证各类别在三个集合中比例一致
-        for label, group in buckets.items():
+        for _label, group in buckets.items():
             # 随机打乱当前组内的数据顺序，防止原始顺序带来的偏差
             random.shuffle(group)
             # 获取当前组的总样本数
@@ -329,7 +331,7 @@ class QueryClassifier:
 
 # ── 模块级单例（供 nodes.py import 调用）───────────────────────
 
-_classifier: Optional[QueryClassifier] = None
+_classifier: QueryClassifier | None = None
 
 
 # ── 模块级单例（供 nodes.py import 调用）───────────────────────

@@ -125,6 +125,13 @@ services:
         condition: service_healthy
       milvus:
         condition: service_healthy
+    healthcheck:
+      # 应用内自带轻量存活探针；start-period 覆盖本地模型预热时间
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 120s
+      retries: 3
 
   # ── Nginx 反向代理 ───────────────────────────────────────────
   nginx:

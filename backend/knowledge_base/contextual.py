@@ -14,8 +14,8 @@ import asyncio
 from langchain_core.documents import Document
 
 from backend.config import get_settings
-from backend.core.logger import get_logger
 from backend.core.llm_factory import get_llm
+from backend.core.logger import get_logger
 
 logger = get_logger(__name__)
 _settings = get_settings()
@@ -110,7 +110,7 @@ async def add_context(
     ])
 
     enriched = 0
-    for chunk, ctx in zip(chunks, contexts):
+    for chunk, ctx in zip(chunks, contexts, strict=False):
         if ctx:
             chunk.page_content = f"{ctx}\n\n{chunk.page_content}"
             enriched += 1

@@ -8,20 +8,22 @@ Version:0.0.1
 # 登录认证接口：/login（签发 Token）与 /me（验证鉴权）
 
 import asyncio
-from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, HTTPException, status, Depends
-from pydantic import BaseModel, Field
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import text
-from jose import jwt
-from passlib.context import CryptContext
-
-from backend.config import get_settings
-from backend.dependencies import get_db, get_current_user
-from backend.core.logger import get_logger
+import types as _types
+from datetime import UTC, datetime, timedelta, timezone
 
 # ── 兼容性补丁：passlib 1.7.4 要读 bcrypt.__about__.__version__，而 bcrypt>=4 删了它 ──
-import bcrypt as _bcrypt_mod, types as _types
+import bcrypt as _bcrypt_mod
+from fastapi import APIRouter, Depends, HTTPException, status
+from jose import jwt
+from passlib.context import CryptContext
+from pydantic import BaseModel, Field
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from backend.config import get_settings
+from backend.core.logger import get_logger
+from backend.dependencies import get_current_user, get_db
+
 if not hasattr(_bcrypt_mod, "__about__"):
     _about = _types.SimpleNamespace(__version__=getattr(_bcrypt_mod, "__version__", "4.x"))
     _bcrypt_mod.__about__ = _about   # 注入假的 __about__，让 passlib 能探测到版本
@@ -50,7 +52,7 @@ def _create_access_token(data: dict, expires_minutes: int) -> str:
     """把身份信息 + 过期时间打包，用密钥签名成 JWT 字符串。"""
     settings = get_settings()
     payload = data.copy()                                            # 拷一份，避免改到原字典
-    expire = datetime.now(timezone.utc) + timedelta(minutes=expires_minutes)
+    expire = datetime.now(UTC) + timedelta(minutes=expires_minutes)
     payload["exp"] = expire                                          # exp 是 JWT 标准的过期字段
     return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
 

@@ -1,9 +1,10 @@
 """
 graph - 产品知识库 Agent 的 LangGraph 图定义
 """
-from langgraph.graph import StateGraph, END
+from langgraph.graph import END, StateGraph
+
+from backend.agents.knowledge.nodes import generate_node, retrieve_node
 from backend.agents.knowledge.state import KnowledgeState
-from backend.agents.knowledge.nodes import retrieve_node, generate_node
 
 
 def build_knowledge_graph() -> StateGraph:

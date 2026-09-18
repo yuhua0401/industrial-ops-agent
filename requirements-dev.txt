@@ -1,0 +1,13 @@
+# 开发 / 测试工具依赖（运行时不需要）
+# 安装：pip install -r requirements.txt -r requirements-dev.txt
+-r requirements.txt
+
+# Lint / 类型检查
+ruff>=0.8
+mypy>=1.13
+
+# 测试补充
+aiosqlite>=0.20            # tests 的内存 SQLite（test_inspection 等）
+
+# 文档效果图截图（scripts/take_screenshots.py）
+playwright>=1.48

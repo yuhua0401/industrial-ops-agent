@@ -7,7 +7,16 @@ models - 数据库 SQLAlchemy ORM 模型
 from datetime import datetime
 
 from sqlalchemy import (
-    Column, String, Text, DateTime, Integer, Float, Boolean, Enum, JSON, ForeignKey,
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
 )
 from sqlalchemy.orm import DeclarativeBase
 
@@ -96,7 +105,9 @@ class Ticket(Base):
     diagnosis_result  = Column(Text, default="")          # Agent③ 诊断结论
     severity          = Column(String(16), default="medium")  # low / medium / high / critical
     category          = Column(String(32), default="repair")  # repair / maintenance / inspection / inquiry
-    status            = Column(String(16), default="pending")  # pending / dispatched / processing / waiting_parts / resolved / closed / cancelled（对齐 ticket/schemas.py TICKET_STATUS_FLOW）
+    # 状态机：pending / dispatched / processing / waiting_parts / resolved / closed / cancelled
+    # （权威定义见 ticket/schemas.py TICKET_STATUS_FLOW）
+    status            = Column(String(16), default="pending")
     assigned_engineer = Column(String(64), default="")
     resolution        = Column(Text, default="")           # 最终解决方案
     notes             = Column(Text, default="")
@@ -112,7 +123,8 @@ class TicketLog(Base):
     id          = Column(Integer, primary_key=True, autoincrement=True)
     ticket_id   = Column(String(32), ForeignKey("tickets.ticket_id"), nullable=False, index=True)
     operator    = Column(String(64), nullable=False)          # 操作人（用户ID或系统Agent名）
-    action      = Column(String(32), nullable=False)          # created / status_changed / assigned / note_added / resolved
+    # 操作类型：created / status_changed / assigned / note_added / resolved
+    action      = Column(String(32), nullable=False)
     from_status = Column(String(16), default="")              # 变更前状态
     to_status   = Column(String(16), default="")              # 变更后状态
     comment     = Column(Text, default="")                    # 操作备注/原因

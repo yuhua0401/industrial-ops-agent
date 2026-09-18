@@ -30,7 +30,6 @@ from backend.agents.diagnosis.graph import _route_after_check
 from backend.agents.diagnosis.kb_client import KBClient
 from backend.agents.diagnosis.state import DiagnosisReport, DiagnosisResult, DiagnosisStep
 
-
 # ──────────────────────────────────────────────────────────────
 # 测试工具：构造诊断树 / 节点
 # ──────────────────────────────────────────────────────────────
@@ -359,11 +358,75 @@ async def test_parse_input_node_fallback_to_fault_description():
 
 
 @pytest.mark.asyncio
-async def test_parse_input_node_with_image():
-    """带图片时 image_desc 保持 None（视觉未接入不阻断流程）。"""
+async def test_parse_input_node_with_image(monkeypatch):
+    """带图片时调用视觉描述并透传 image_desc。"""
+    async def fake_describe(image_b64):
+        assert image_b64 == "base64:xxx"
+        return "设备报警灯红色，显示屏显示E001"
+    monkeypatch.setattr(nodes, "_describe_image", fake_describe)
+    state = _make_state(user_input="电机不转", image="base64:xxx")
+    result = await nodes.parse_input_node(state)
+    assert result["image_desc"] == "设备报警灯红色，显示屏显示E001"
+
+
+@pytest.mark.asyncio
+async def test_parse_input_node_vision_degraded(monkeypatch):
+    """视觉描述失败返回 None → 降级纯文字诊断，不阻断流程。"""
+    async def fake_describe(image_b64):
+        return None
+    monkeypatch.setattr(nodes, "_describe_image", fake_describe)
     state = _make_state(user_input="电机不转", image="base64:xxx")
     result = await nodes.parse_input_node(state)
     assert result["image_desc"] is None
+    assert "电机不转" in result["phenomena"]
+
+
+# ──────────────────────────────────────────────────────────────
+# _describe_image：vision 路由 + 降级
+# ──────────────────────────────────────────────────────────────
+
+class _VisionLLM:
+    def __init__(self, probe):
+        self.probe = probe
+
+    async def ainvoke(self, messages):
+        self.probe["messages"] = messages
+        from langchain_core.messages import AIMessage
+        return AIMessage(content="报警灯亮红灯，屏幕显示 E001")
+
+
+@pytest.mark.asyncio
+async def test_describe_image_uses_vision_route(monkeypatch):
+    """_describe_image 走 vision 路由，返回多模态消息并剥出文本。"""
+    probe = {}
+    monkeypatch.setattr(nodes, "get_llm", lambda agent_type, **k: probe.update(agent=agent_type) or _VisionLLM(probe))
+    desc = await nodes._describe_image("abc123")
+    assert desc == "报警灯亮红灯，屏幕显示 E001"
+    assert probe["agent"] == "vision"
+    content = probe["messages"][0].content
+    assert isinstance(content, list)
+    assert content[0]["type"] == "text"
+    assert content[1]["type"] == "image_url"
+    assert content[1]["image_url"]["url"].endswith("base64,abc123")
+
+
+@pytest.mark.asyncio
+async def test_describe_image_failure_returns_none(monkeypatch):
+    """视觉调用异常 → 返回 None（降级），不抛异常。"""
+    class _BrokenLLM:
+        async def ainvoke(self, messages):
+            raise RuntimeError("vision model unavailable")
+
+    monkeypatch.setattr(nodes, "get_llm", lambda agent_type, **k: _BrokenLLM())
+    desc = await nodes._describe_image("abc123")
+    assert desc is None
+
+
+def test_image_block():
+    """有描述时拼接图片块；无描述返回空串。"""
+    assert nodes._image_block(None) == ""
+    assert nodes._image_block("") == ""
+    assert nodes._image_block("外壳破损") == "\n【图片描述】外壳破损"
 
 
 # ──────────────────────────────────────────────────────────────
@@ -737,7 +800,9 @@ def test_diagnosis_result_model():
 
 def test_diagnosis_report_model_validation():
     """DiagnosisReport 拒绝非法字段（如缺失必填项）。"""
-    with pytest.raises(Exception):
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError):
         DiagnosisReport(conclusion="x")  # 缺 causes / solutions / need_ticket / confidence
 
 

@@ -151,6 +151,7 @@ class Supervisor:
     def _diagnosis_initial_state(
         message: str, session_id: str, customer_id: str = "",
         device_model: str = "", fault_code: str | None = None,
+        image: str | None = None,
     ) -> dict:
         return {
             "messages": [HumanMessage(content=message)],
@@ -163,7 +164,7 @@ class Supervisor:
             "resolved": False,
             "user_input": message,
             "fault_code": fault_code,
-            "image": None,
+            "image": image,
             "image_desc": None,
             "phenomena": [],
             "kb_hits": [],
@@ -350,6 +351,7 @@ class Supervisor:
         self, message: str, session_id: str, customer_id: str = "",
         device_model: str = "", fault_code: str | None = None,
         resume: bool = False, resume_answer: str = "",
+        image: str | None = None,
     ) -> AsyncIterator[AgentStep]:
         """流式执行诊断图，产出 AgentStep。
 
@@ -363,6 +365,7 @@ class Supervisor:
         else:
             command = self._diagnosis_initial_state(
                 message, session_id, customer_id, device_model, fault_code,
+                image=image,
             )
 
         final_state: dict = {}

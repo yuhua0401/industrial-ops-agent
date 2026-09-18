@@ -10,8 +10,8 @@ migrations - 数据库迁移
 
 from sqlalchemy import text
 
-from backend.dependencies import AsyncSessionLocal
 from backend.core.logger import get_logger
+from backend.dependencies import AsyncSessionLocal
 
 logger = get_logger(__name__)
 
