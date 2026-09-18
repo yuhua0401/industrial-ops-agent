@@ -13,6 +13,9 @@ const state = {
   sessionId: newSessionId(),
   sending: false,
   abortCtrl: null,
+  attachImage: null,      // 待发送图片（dataURL）
+  micUnsupported: false,  // 浏览器不支持语音识别
+  pendingMessage: null,   // 登录墙拦截下来的待发消息
 };
 
 function newSessionId() {
@@ -26,6 +29,11 @@ const chatWindow = $("chatWindow");
 const msgInput = $("msgInput");
 const sendBtn = $("sendBtn");
 const stopBtn = $("stopBtn");
+const micBtn = $("micBtn");
+const attachBtn = $("attachBtn");
+const fileInput = $("fileInput");
+const attachPreview = $("attachPreview");
+const attachThumb = $("attachThumb");
 
 const BOT_SVG =
   '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" ' +
@@ -34,8 +42,13 @@ const BOT_SVG =
   'r="0.6"/><circle cx="15" cy="14" r="0.6"/></svg>';
 
 /* ═══════════════════════════════════════════
-   一、登录（JWT）
+   一、鉴权与视图切换（登录页 ⇄ 主界面）
    ═══════════════════════════════════════════ */
+
+const loginView = $("loginView");
+const appView = $("appView");
+const loginError = $("loginError");
+const loginSubmitBtn = $("loginSubmitBtn");
 
 async function login(username, password) {
   const resp = await fetch("/api/v1/login", {
@@ -53,33 +66,61 @@ async function login(username, password) {
   await fetchMe();
 }
 
+/** 校验本地 token；返回是否有效（无效时清除本地态）。 */
 async function fetchMe() {
-  if (!state.token) { renderUserBox(); return; }
+  if (!state.token) return false;
   const resp = await fetch("/api/v1/me", {
     headers: { Authorization: "Bearer " + state.token },
   });
   if (resp.ok) {
     state.user = await resp.json();
-  } else {
-    state.token = ""; state.user = null;
-    localStorage.removeItem("eqcs_token");
+    renderUserBox();
+    return true;
   }
-  renderUserBox();
+  state.token = "";
+  state.user = null;
+  localStorage.removeItem("eqcs_token");
+  return false;
 }
 
 function renderUserBox() {
-  const loginBtn = $("loginBtn"), userInfo = $("userInfo");
-  if (state.user) {
-    const name = state.user.user_id || "-";
-    const role = state.user.role || "-";
-    $("userName").textContent = role === "engineer" ? "张工程师" : name;
-    $("userRole").textContent = role;
-    $("userAvatar").textContent = role === "engineer" ? "工" : role.charAt(0).toUpperCase();
-    loginBtn.classList.add("hidden");
-    userInfo.classList.remove("hidden");
+  if (!state.user) return;
+  const name = state.user.user_id || "-";
+  const role = state.user.role || "-";
+  $("userName").textContent = role === "engineer" ? "张工程师" : name;
+  $("userRole").textContent = role;
+  $("userAvatar").textContent = role === "engineer" ? "工" : role.charAt(0).toUpperCase();
+}
+
+/* ── 视图切换 ─────────────────────────────── */
+function showApp() {
+  loginView.classList.add("hidden");
+  appView.classList.remove("hidden");
+  msgInput.focus();
+}
+
+function showLogin(message) {
+  appView.classList.add("hidden");
+  loginView.classList.remove("hidden");
+  loginError.textContent = message || "";
+  loginError.classList.toggle("hidden", !message);
+  $("loginUsername").focus();
+}
+
+/** 会话中途鉴权失效：清态回登录页 */
+function gotoLogin(message) {
+  state.token = "";
+  state.user = null;
+  localStorage.removeItem("eqcs_token");
+  showLogin(message);
+}
+
+/* 页面加载后的鉴权分流：有 token 且有效 → 直接进主界面 */
+async function initAuth() {
+  if (state.token && (await fetchMe())) {
+    showApp();
   } else {
-    loginBtn.classList.remove("hidden");
-    userInfo.classList.add("hidden");
+    showLogin();
   }
 }
 
@@ -113,20 +154,28 @@ function renderMd(text) {
     .replace(/`([^`]+)`/g, '<span class="md-code">$1</span>');
 }
 
+function nowHM() {
+  const d = new Date();
+  return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+}
+
 function addUserMsg(text) {
   addWelcomeGone();
   const wrap = el("div", "msg-user");
+  const col = el("div", "user-col");
   const bubble = el("div", "bubble", text);
+  col.appendChild(bubble);
+  col.appendChild(el("span", "msg-time", nowHM()));
   const avatar = el("span", "avatar avatar-user", "我");
-  wrap.appendChild(bubble);
+  wrap.appendChild(col);
   wrap.appendChild(avatar);
   chatWindow.appendChild(wrap);
   scrollBottom();
 }
 
-/** 开启一个新的助手回合：左侧机器人头像 + 右侧内容列 */
+/** 开启一个新的助手回合：左侧机器人头像 + 右侧内容列（流式时头像呼吸） */
 function openTurn() {
-  const turn = el("div", "turn");
+  const turn = el("div", "turn streaming");
   const avatar = el("span", "avatar avatar-bot", BOT_SVG, true);
   const body = el("div", "turn-body");
   turn.appendChild(avatar);
@@ -253,10 +302,15 @@ function metaLine(body, data) {
   if (line.children.length) { body.appendChild(line); scrollBottom(); }
 }
 
-/** 完成回合：移除进度行与流式光标 */
+/** 完成回合：移除进度行与流式光标，附加时间戳，停止头像呼吸 */
 function finishTurn(body) {
   const line = body && body.querySelector(".progress-line");
   if (line) line.remove();
+  if (body && body.querySelector(".msg-assistant")) {
+    body.appendChild(el("span", "msg-time assistant-time", nowHM()));
+  }
+  const turn = body && body.parentElement;
+  if (turn) turn.classList.remove("streaming");
   if (body && !body.childNodes.length) body.parentElement.remove();
   const bubble = body && body.querySelector(".msg-assistant");
   if (bubble) bubble.classList.remove("streaming-cursor");
@@ -267,11 +321,24 @@ function finishTurn(body) {
    ═══════════════════════════════════════════ */
 
 async function sendMessage(text) {
-  if (state.sending || !text.trim()) return;
+  const trimmed = (text || "").trim();
+  if (state.sending || (!trimmed && !state.attachImage)) return;
+
+  /* 登录墙：未登录先到登录页，登录成功后自动续发 */
+  if (!state.token) {
+    state.pendingMessage = trimmed;
+    gotoLogin("请先登录后再发送消息");
+    return;
+  }
+
   state.sending = true;
   setSendingUI(true);
 
-  addUserMsg(text);
+  const outText = trimmed || "请结合图片分析设备故障";
+  addUserMsg(trimmed || "📷 [故障图片]");
+  const attach = state.attachImage;
+  clearAttachment();
+
   const body = openTurn();
   progressLine(body, "正在连接服务…");
   let gotEvent = false;
@@ -279,19 +346,28 @@ async function sendMessage(text) {
   state.abortCtrl = new AbortController();
   const payload = {
     session_id: state.sessionId,
-    message: text.trim(),
+    message: outText,
     customer_id: "",
     device_model: $("deviceModel").value.trim(),
     device_sn: $("deviceSn").value.trim(),
+    image: attach || "",
   };
 
   try {
     const resp = await fetch("/api/v1/chat/stream", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + state.token,
+      },
       body: JSON.stringify(payload),
       signal: state.abortCtrl.signal,
     });
+    if (resp.status === 401) {
+      /* Token 失效：清除并回登录页 */
+      gotoLogin("登录已过期，请重新登录");
+      return;
+    }
     if (!resp.ok || !resp.body) {
       throw new Error(`服务返回 HTTP ${resp.status}`);
     }
@@ -355,6 +431,121 @@ function setSendingUI(sending) {
   sendBtn.classList.toggle("hidden", sending);
   stopBtn.classList.toggle("hidden", !sending);
   msgInput.disabled = sending;
+  attachBtn.disabled = sending;
+  if (!state.micUnsupported) micBtn.disabled = sending;
+  if (sending && listening) stopListening();
+}
+
+/* ═══════════════════════════════════════════
+   三·五、语音输入（Web Speech API）与图片上传
+   ═══════════════════════════════════════════ */
+
+/* ── 语音输入：浏览器内置识别（Edge/Chrome），结果填入输入框 ── */
+const SRClass = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+let listening = false;
+
+if (!SRClass) {
+  state.micUnsupported = true;
+  micBtn.disabled = true;
+  micBtn.title = "当前浏览器不支持语音识别，请使用 Edge / Chrome";
+}
+
+micBtn.addEventListener("click", () => {
+  if (listening) { stopListening(); return; }
+  startListening();
+});
+
+function startListening() {
+  recognition = new SRClass();
+  recognition.lang = "zh-CN";
+  recognition.interimResults = true;   // 实时上屏
+  recognition.continuous = false;      // 单句结束自动停止
+  const base = msgInput.value ? msgInput.value.replace(/\s+$/, "") + " " : "";
+
+  recognition.onresult = (e) => {
+    let text = "";
+    for (const res of e.results) text += res[0].transcript;
+    msgInput.value = base + text;
+    autoGrow();
+  };
+  recognition.onend = () => { setListening(false); msgInput.focus(); };
+  recognition.onerror = (e) => {
+    setListening(false);
+    if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+      micBtn.title = "麦克风权限被拒绝，请在浏览器地址栏设置中允许";
+    }
+  };
+
+  try {
+    recognition.start();
+    setListening(true);
+  } catch {
+    setListening(false);
+  }
+}
+
+function stopListening() {
+  if (recognition) { try { recognition.stop(); } catch { /* 忽略 */ } }
+  setListening(false);
+}
+
+function setListening(on) {
+  listening = on;
+  micBtn.classList.toggle("listening", on);
+  micBtn.title = on ? "停止录音" : "语音输入";
+}
+
+/* ── 图片上传：选图 → canvas 压缩（≤1024px JPEG）→ 预览 ── */
+attachBtn.addEventListener("click", () => fileInput.click());
+
+fileInput.addEventListener("change", async () => {
+  const file = fileInput.files && fileInput.files[0];
+  fileInput.value = "";
+  if (!file || !file.type.startsWith("image/")) return;
+  try {
+    state.attachImage = await fileToDataUrl(file);
+    attachThumb.src = state.attachImage;
+    attachPreview.classList.remove("hidden");
+  } catch {
+    clearAttachment();
+  }
+});
+
+$("attachRemoveBtn").addEventListener("click", clearAttachment);
+
+function clearAttachment() {
+  state.attachImage = null;
+  attachThumb.removeAttribute("src");
+  attachPreview.classList.add("hidden");
+}
+
+/** 读文件并压缩：最长边 ≤1024px，JPEG q0.85（控制 base64 体积） */
+async function fileToDataUrl(file) {
+  const dataUrl = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+  const img = new Image();
+  await new Promise((resolve, reject) => {
+    img.onload = resolve;
+    img.onerror = reject;
+    img.src = dataUrl;
+  });
+  const MAX = 1024;
+  let { width, height } = img;
+  if (Math.max(width, height) > MAX) {
+    const scale = MAX / Math.max(width, height);
+    width = Math.round(width * scale);
+    height = Math.round(height * scale);
+  }
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+  return canvas.toDataURL("image/jpeg", 0.85);
 }
 
 /* ═══════════════════════════════════════════
@@ -448,40 +639,58 @@ document.addEventListener("click", (e) => {
   if (btn && btn.dataset.msg) sendMessage(btn.dataset.msg);
 });
 
-/* 登录弹窗 */
-const loginModal = $("loginModal");
-function openLogin() {
-  loginModal.classList.remove("hidden");
-  $("loginError").classList.add("hidden");
-}
-$("loginBtn").addEventListener("click", openLogin);
-$("loginCancelBtn").addEventListener("click", () => loginModal.classList.add("hidden"));
-$("loginSubmitBtn").addEventListener("click", async () => {
-  const btn = $("loginSubmitBtn");
+/* ═══════════════════════════════════════════
+   五、登录页交互
+   ═══════════════════════════════════════════ */
+
+$("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const btn = loginSubmitBtn;
+  const btnText = btn.querySelector(".login-btn-text");
+  const btnLoading = btn.querySelector(".login-loading");
   btn.disabled = true;
+  btnText.classList.add("hidden");
+  btnLoading.classList.remove("hidden");
   try {
     await login($("loginUsername").value.trim(), $("loginPassword").value);
-    loginModal.classList.add("hidden");
+    loginError.classList.add("hidden");
+    showApp();
+    /* 登录墙拦截的消息自动续发 */
+    const pending = state.pendingMessage;
+    state.pendingMessage = null;
+    if (pending) sendMessage(pending);
   } catch (err) {
-    const errBox = $("loginError");
-    errBox.textContent = err.message;
-    errBox.classList.remove("hidden");
+    loginError.textContent = err.message;
+    loginError.classList.remove("hidden");
   } finally {
     btn.disabled = false;
+    btnText.classList.remove("hidden");
+    btnLoading.classList.add("hidden");
   }
 });
-$("logoutBtn").addEventListener("click", () => {
-  state.token = ""; state.user = null;
-  localStorage.removeItem("eqcs_token");
-  renderUserBox();
+
+/* 演示账号一键填入 */
+document.querySelectorAll(".demo-chip").forEach((chip) => {
+  chip.addEventListener("click", () => {
+    $("loginUsername").value = chip.dataset.u;
+    $("loginPassword").value = chip.dataset.p;
+    loginError.classList.add("hidden");
+    $("loginPassword").focus();
+  });
 });
 
-/* Enter 直接提交登录 */
-$("loginPassword").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") $("loginSubmitBtn").click();
+/* 密码可见切换 */
+$("pwdEyeBtn").addEventListener("click", () => {
+  const input = $("loginPassword");
+  input.type = input.type === "password" ? "text" : "password";
+});
+
+/* 退出登录 → 回登录页 */
+$("logoutBtn").addEventListener("click", () => {
+  if (state.sending && state.abortCtrl) state.abortCtrl.abort();
+  gotoLogin("已退出登录");
 });
 
 /* ── 初始化 ─────────────────────────────── */
 $("sessionIdText").textContent = state.sessionId.slice(0, 8);
-fetchMe();
-msgInput.focus();
+initAuth();

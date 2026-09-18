@@ -1,5 +1,7 @@
 # industrial-ops-agent — 工业设备智能运维多 Agent 平台
 
+[![CI](https://github.com/yuhua0401/industrial-ops-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/yuhua0401/industrial-ops-agent/actions/workflows/ci.yml)
+
 面向 **工业设备制造商与使用方** 的多 Agent 智能运维平台，面向钢铁/流程行业「设备全生命周期管理」的业务场景，用大模型智能体重塑设备运维的 **点检 → 诊断 → 报修 → 备件 → 售后** 全链路。
 
 ## 界面预览
@@ -7,7 +9,7 @@
 零构建演示前端（`backend/static/`），服务启动后访问 http://localhost:8000/ 即可体验。
 以下截图由 `python scripts/take_screenshots.py` 对真实运行系统自动拍摄（Playwright + 系统 Edge 无头模式，真实 LLM 对话）：
 
-| 欢迎屏 · 预设问题 | JWT 登录 |
+| 欢迎屏 · 预设问题 | 登录页 · JWT 鉴权 |
 |:---:|:---:|
 | ![欢迎屏](docs/images/welcome.png) | ![登录](docs/images/login.png) |
 
@@ -195,6 +197,7 @@ python scripts/demo_diagnosis.py
 - [系统架构设计](docs/architecture.md)
 - [API 文档](docs/api.md)
 - [部署指南](docs/deployment.md)
+- [生产上线检查清单](docs/production-checklist.md)
 
 ## License
 
